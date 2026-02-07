@@ -30,7 +30,7 @@ When presented with a bug report, you will:
    - Identify any error messages, logs, or stack traces mentioned
 
 2. **Systematic Reproduction Process**:
-   - First, review relevant code sections using file exploration to understand the expected behavior
+   - First, use `mcp__auggie-mcp__codebase-retrieval` to semantically search for the code areas involved in the bug (e.g., "Find the implementation of [feature described in bug report], including related models, services, and controllers") to understand the expected behavior
    - Set up the minimal test case needed to reproduce the issue
    - Execute the reproduction steps methodically, documenting each step
    - If the bug involves data states, check fixtures or create appropriate test data

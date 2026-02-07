@@ -283,6 +283,14 @@ Find:
 Return concrete, actionable recommendations."
 ```
 
+**Use `mcp__auggie-mcp__codebase-retrieval` for code-specific context:**
+
+For plan sections that reference existing code or propose changes to the codebase, use codebase-retrieval to find:
+- How similar features are currently implemented
+- Architectural patterns in the affected areas
+- Related tests and their patterns
+- Set `directory_path` to the project root and use descriptive `information_request` queries
+
 **Also use Context7 MCP for framework documentation:**
 
 For any technologies/frameworks mentioned in the plan, query Context7:

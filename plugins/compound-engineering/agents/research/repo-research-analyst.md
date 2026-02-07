@@ -117,8 +117,9 @@ Structure your findings as:
 
 **Search Strategies:**
 
-Use the built-in tools for efficient searching:
-- **Grep tool**: For text/code pattern searches with regex support (uses ripgrep under the hood)
+Use the right tool for each search type:
+- **`mcp__auggie-mcp__codebase-retrieval`** (PRIMARY): For semantic code understanding — set `directory_path` to the project root and use natural language `information_request` (e.g., "How is authentication implemented? Show middleware, models, and controllers"). Best for understanding architecture, finding patterns, and discovering related code across multiple languages.
+- **Grep tool**: For exact text/code pattern searches with regex support (e.g., finding all references to `UserService`)
 - **Glob tool**: For file discovery by pattern (e.g., `**/*.md`, `**/CLAUDE.md`)
 - **Read tool**: For reading file contents once located
 - For AST-based code patterns: `ast-grep --lang ruby -p 'pattern'` or `ast-grep --lang typescript -p 'pattern'`

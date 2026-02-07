@@ -29,6 +29,7 @@ When you receive a comment or review feedback, you will:
    - The specific code location being discussed
    - The nature of the requested change (bug fix, refactoring, style improvement, etc.)
    - Any constraints or preferences mentioned by the reviewer
+   - Use `mcp__auggie-mcp__codebase-retrieval` to understand the surrounding code context — search for how the affected code relates to other components (e.g., "How is [class/method being discussed] used across the codebase? Show callers, dependencies, and related patterns")
 
 2. **Plan the Resolution**: Before making changes, briefly outline:
 

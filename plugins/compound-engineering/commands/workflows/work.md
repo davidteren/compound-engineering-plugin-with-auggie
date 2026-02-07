@@ -132,10 +132,11 @@ This command takes a work document (plan, specification, or todo file) and execu
 3. **Follow Existing Patterns**
 
    - The plan should reference similar code - read those files first
+   - Before implementing each task, use `mcp__auggie-mcp__codebase-retrieval` to find similar patterns: "Find implementations similar to [task description] in this codebase" — this is more effective than `grep` for discovering related code you should follow
    - Match naming conventions exactly
    - Reuse existing components where possible
    - Follow project coding standards (see CLAUDE.md)
-   - When in doubt, grep for similar implementations
+   - When in doubt, use Grep for exact identifier matches
 
 4. **Test Continuously**
 

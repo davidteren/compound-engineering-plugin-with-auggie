@@ -11,6 +11,8 @@ Look at github issue #$ARGUMENTS and read the issue description and comments.
 
 ## Phase 1: Log Investigation
 
+**Codebase Context First:** Use `mcp__auggie-mcp__codebase-retrieval` to understand the code areas related to the bug. Search for: "Find the implementation of [feature described in the issue], including error handling, validation, and related services". This helps identify where things could go wrong.
+
 Run the following agents in parallel to investigate the bug:
 
 1. Task rails-console-explorer(issue_description)

@@ -72,6 +72,18 @@ Refine the idea through collaborative dialogue using the **AskUserQuestion tool*
 First, I need to understand the project's conventions, existing patterns, and any documented learnings. This is fast and local - it informs whether external research is needed.
 </thinking>
 
+#### 1.0 Codebase Context (Runs First)
+
+Use `mcp__auggie-mcp__codebase-retrieval` to understand the codebase areas relevant to this feature:
+- Search for existing implementations similar to the proposed feature (e.g., "Find implementations related to [feature description]")
+- Identify architectural patterns and conventions in the affected area
+- Find related tests, services, and models
+- Set `directory_path` to the project root
+
+This informs the repo-research-analyst and learnings-researcher agents launched next.
+
+#### 1.1 Agent Research (Parallel)
+
 Run these agents **in parallel** to gather local context:
 
 - Task repo-research-analyst(feature_description)

@@ -84,6 +84,31 @@ grep -E '`(references|assets|scripts)/[^`]+`' skills/*/SKILL.md
 grep -E '^description:' skills/*/SKILL.md
 ```
 
+## Codebase Search Best Practices
+
+### When to Use Each Tool
+
+| Tool | Use When | Example |
+|------|----------|---------|
+| `mcp__auggie-mcp__codebase-retrieval` | Understanding architecture, finding patterns, semantic search | "How is authentication implemented?" |
+| Grep | Finding exact identifiers, counting references, regex patterns | `class UserService`, `def process_payment` |
+| Glob | Finding files by path pattern | `**/*.test.ts`, `app/models/*.rb` |
+| Context7 (`mcp__plugin_compound-engineering_context7`) | Framework/library documentation | "React Query cache invalidation" |
+
+### Best Practice: Always Search Before Suggesting
+
+Before suggesting architectural changes, refactoring, or new patterns:
+1. Use `mcp__auggie-mcp__codebase-retrieval` to find how similar things are done in this codebase
+2. Match existing conventions rather than introducing new ones
+3. Reference specific files and line numbers in your recommendations
+
+### Using codebase-retrieval Effectively
+
+- Set `directory_path` to the project root directory
+- Use natural language `information_request` — describe what you need conceptually (e.g., "Find authentication middleware and session management")
+- Use Grep/Glob for exact identifier matching (e.g., "find all references to `UserService`")
+- codebase-retrieval is optional — agents gracefully fall back to Grep/Glob if unavailable
+
 ## Documentation
 
 See `docs/solutions/plugin-versioning-requirements.md` for detailed versioning workflow.

@@ -65,6 +65,10 @@ Read `compound-engineering.local.md` in the project root. If found, use `review_
 
 If no settings file exists, invoke the `setup` skill to create one. Then read the newly created file and continue.
 
+#### Pre-Agent Codebase Scan
+
+Before launching parallel agents, use `mcp__auggie-mcp__codebase-retrieval` to gather context about the PR's affected areas. Search for: "Explain the architecture and patterns in [affected files/modules from PR]". Include this context in each agent's prompt for better-informed reviews.
+
 #### Parallel Agents to review the PR:
 
 <parallel_tasks>

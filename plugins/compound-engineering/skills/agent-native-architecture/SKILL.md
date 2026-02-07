@@ -204,6 +204,9 @@ When designing an agent-native system, verify these **before implementation**:
 - [ ] **Composability:** New features can be added via prompts alone
 - [ ] **Emergent Capability:** Agent can handle open-ended requests in your domain
 
+### Codebase Understanding
+- [ ] **Semantic Search:** Use `mcp__auggie-mcp__codebase-retrieval` to understand existing tools, capabilities, and UI actions before checking parity (e.g., "Find all agent tools, UI actions, and system prompt construction in this codebase")
+
 ### Tool Design
 - [ ] **Dynamic vs Static:** For external APIs where agent should have full access, use Dynamic Capability Discovery
 - [ ] **CRUD Completeness:** Every entity has create, read, update, AND delete

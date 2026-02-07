@@ -71,7 +71,7 @@ Ask questions **one at a time** to understand the user's intent. Avoid overwhelm
 | Constraints | Any technical limitations? Timeline? Dependencies? |
 | Success | How will you measure success? What's the happy path? |
 | Edge Cases | What shouldn't happen? Any error states to consider? |
-| Existing Patterns | Are there similar features in the codebase to follow? |
+| Existing Patterns | Use `mcp__auggie-mcp__codebase-retrieval` to find similar features in the codebase |
 
 **Exit Condition:** Continue until the idea is clear OR user says "proceed" or "let's move on"
 

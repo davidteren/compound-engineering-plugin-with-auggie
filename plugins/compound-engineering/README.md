@@ -187,6 +187,14 @@ Supports 100+ frameworks including Rails, React, Next.js, Vue, Django, Laravel, 
 
 MCP servers start automatically when the plugin is enabled.
 
+### Optional: Augment Codebase Retrieval (auggie-mcp)
+
+Many agents in this plugin are enhanced by `mcp__auggie-mcp__codebase-retrieval`, which provides semantic, embedding-based code search. This is more effective than text-based search for understanding architecture, finding patterns, and discovering related code.
+
+**If available**, agents will use it as their primary search tool. **If not available**, agents gracefully fall back to Grep/Glob.
+
+To add it, configure the `auggie-mcp` MCP server in your Claude Code settings. See Augment's documentation for setup instructions.
+
 ## Browser Automation
 
 This plugin uses **agent-browser CLI** for browser automation tasks. Install it globally:
