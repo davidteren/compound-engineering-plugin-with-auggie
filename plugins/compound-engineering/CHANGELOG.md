@@ -5,6 +5,14 @@ All notable changes to the compound-engineering plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.35.1] - 2026-02-18
+
+### Changed
+
+- **Rebased on upstream v2.35.0** — Synced fork with upstream, preserving codebase-retrieval (auggie-mcp) integration across all agents, commands, and skills.
+
+---
+
 ## [2.35.0] - 2026-02-17
 
 ### Fixed
@@ -93,6 +101,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backup existing config files before overwriting in sync ([@Zac Williams](https://github.com/zacwilliams))
 - Note new repository URL ([@Aarni Koskela](https://github.com/aarnikoskela))
 - Plugin component counts corrected: 29 agents, 24 commands, 18 skills
+
+---
+
+## [2.30.1] - 2026-02-08
+
+### Changed
+
+- **Integrated `codebase-retrieval` (auggie-mcp) across 23 files** - All code-analyzing agents, commands, and skills now recommend semantic code search as the first step before analysis. This dramatically improves context quality for reviews, research, and planning.
+
+  **Review agents (10):** `architecture-strategist`, `pattern-recognition-specialist`, `performance-oracle`, `security-sentinel`, `code-simplicity-reviewer`, `agent-native-reviewer`, `kieran-rails-reviewer`, `kieran-python-reviewer`, `kieran-typescript-reviewer`, `dhh-rails-reviewer` — each gains a "Codebase Search Strategy" section with primary (semantic) and secondary (Grep/Glob) tool guidance.
+
+  **Research agents (2):** `repo-research-analyst` — codebase-retrieval added as PRIMARY search tool. `best-practices-researcher` — now checks codebase patterns before going online.
+
+  **Workflow agents (2):** `pr-comment-resolver` — uses codebase-retrieval to understand surrounding code context. `bug-reproduction-validator` — replaces "file exploration" with semantic search.
+
+  **Commands (5):** `/workflows:plan` — new "Codebase Context" step before agent research. `/workflows:work` — replaced "grep for similar implementations" with semantic search. `/workflows:review` — new "Pre-Agent Codebase Scan" before launching parallel agents. `/deepen-plan` — added codebase-retrieval alongside Context7 for code-specific context. `/reproduce-bug` — added codebase context step in log investigation phase.
+
+  **Skills (2):** `agent-native-architecture` — new "Codebase Understanding" checkbox in Architecture Checklist. `brainstorming` — updated "Existing Patterns" to reference semantic search.
+
+  **Documentation (2):** `CLAUDE.md` — new "Codebase Search Best Practices" section with tool comparison table. `README.md` — documented auggie-mcp as optional MCP server.
+
+- **`security-sentinel` agent** - Replaced all raw `grep -r` command examples with semantic codebase-retrieval queries supplemented by Grep for precise patterns
 
 ---
 
