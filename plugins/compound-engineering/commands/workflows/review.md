@@ -21,6 +21,68 @@ argument-hint: "[PR number, GitHub URL, branch name, or latest]"
 - For document reviews: Path to a markdown file or document
 </requirements>
 
+## Review Philosophy: Fundamental Technical Issues Only
+
+**CRITICAL:** The objective is to identify fundamental technical correctness issues, NOT provide domain-specific commentary.
+
+### Focus On (Fundamental Technical Issues)
+
+✅ **Type Safety Violations**
+- Unsafe type casts without validation (`as Type` without runtime checks)
+- Type signatures that don't match actual return values
+- Overly permissive types causing multi-state ambiguity
+- Missing runtime validation at API/external boundaries
+
+✅ **Data Integrity Issues**
+- Race conditions in async operations
+- Data corruption bugs (null coercion, semantic errors)
+- Missing concurrency control
+- State management bugs
+
+✅ **Functional Correctness**
+- Missing functionality (incomplete feature integration)
+- Logic errors that cause incorrect behavior
+- Breaking changes without migration paths
+
+✅ **Existing Pattern Violations**
+- Duplicating functionality that already exists in codebase
+- Not leveraging existing utilities/patterns
+- Inconsistent with established architectural patterns
+- Breaking existing conventions without justification
+
+### Do NOT Focus On (Domain Commentary)
+
+❌ **Security Domain** — Unless it's a fundamental bug (e.g., SQL injection in user code), avoid:
+- XSS concerns (framework/sanitization responsibility)
+- CSRF protection (infrastructure concern)
+- Authentication/authorization patterns (domain specific)
+- Open redirect vulnerabilities (defense-in-depth, not bug)
+
+❌ **Performance Domain** — Unless it's an O(n²) bug or obvious blocker, avoid:
+- Bundle size optimization
+- Caching strategies
+- Lazy loading patterns
+- Micro-optimizations
+
+❌ **Architecture Preferences** — Unless it violates established patterns:
+- Suggestions for "better" structure
+- Refactoring opportunities
+- Alternative approaches
+- Style preferences
+
+### Codebase Context Usage
+
+**REQUIRED:** Before flagging any duplication or pattern violation:
+
+1. **Search existing codebase** for similar functionality
+2. **Check if pattern already exists** that could be reused
+3. **Verify the pattern is actually used** elsewhere before suggesting it
+4. **Cite specific examples** from the codebase when suggesting patterns
+
+**Example:** "This duplicates the session validation pattern in `UserStore.validateSession()` — consider reusing that approach."
+
+---
+
 ## Main Tasks
 
 ### 1. Determine Review Target & Setup (ALWAYS FIRST)
@@ -225,10 +287,23 @@ Remove duplicates, prioritize by severity and impact.
 - [ ] Collect findings from all parallel agents
 - [ ] Surface learnings-researcher results: if past solutions are relevant, flag them as "Known Pattern" with links to docs/solutions/ files
 - [ ] Discard any findings that recommend deleting or gitignoring files in `docs/plans/` or `docs/solutions/` (see Protected Artifacts above)
-- [ ] Categorize by type: security, performance, architecture, quality, etc.
+- [ ] **FILTER OUT domain commentary** (see Review Philosophy above):
+  - Discard security-domain findings (XSS, CSRF, open redirects) unless fundamental bugs
+  - Discard performance-domain findings (bundle size, caching, lazy loading) unless blocking issues
+  - Discard architecture preferences unless they violate existing patterns
+- [ ] **PRIORITIZE fundamental technical issues:**
+  - Type safety violations (unsafe casts, wrong signatures, missing validation)
+  - Data integrity bugs (race conditions, null handling, semantic errors)
+  - Functional correctness (missing features, logic errors)
+  - Pattern violations (duplicating existing functionality)
+- [ ] **CHECK codebase for existing patterns:**
+  - Search for similar functionality before flagging duplication
+  - Verify if pattern/utility already exists that could be reused
+  - Cite specific examples from codebase when suggesting patterns
+- [ ] Categorize by type: type-safety, data-integrity, functional, patterns
 - [ ] Assign severity levels: 🔴 CRITICAL (P1), 🟡 IMPORTANT (P2), 🔵 NICE-TO-HAVE (P3)
 - [ ] Remove duplicate or overlapping findings
-- [ ] Estimate effort for each finding (Small/Medium/Large)
+- [ ] **DO NOT include effort estimates or timing language** in findings
 
 </synthesis_tasks>
 
