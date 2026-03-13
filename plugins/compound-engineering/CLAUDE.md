@@ -34,23 +34,26 @@ agents/
 ├── workflow/   # Workflow automation agents
 └── docs/       # Documentation agents
 
-commands/
-├── workflows/  # Core workflow commands (workflows:plan, workflows:review, etc.)
-└── *.md        # Utility commands
-
 skills/
-└── *.md        # All skills at root level
+├── ce-*/          # Core workflow skills (ce:plan, ce:review, etc.)
+├── workflows-*/   # Deprecated aliases for ce:* skills
+└── */             # All other skills
 ```
+
+> **Note:** Commands were migrated to skills in v2.39.0. All former
+> `/command-name` slash commands now live under `skills/command-name/SKILL.md`
+> and work identically (Claude Code 2.1.3+ merged the two formats).
 
 ## Command Naming Convention
 
-**Workflow commands** use `workflows:` prefix to avoid collisions with built-in commands:
-- `/workflows:plan` - Create implementation plans
-- `/workflows:review` - Run comprehensive code reviews
-- `/workflows:work` - Execute work items systematically
-- `/workflows:compound` - Document solved problems
+**Workflow commands** use `ce:` prefix to unambiguously identify them as compound-engineering commands:
+- `/ce:plan` - Create implementation plans
+- `/ce:review` - Run comprehensive code reviews
+- `/ce:work` - Execute work items systematically
+- `/ce:compound` - Document solved problems
+- `/ce:brainstorm` - Explore requirements and approaches before planning
 
-**Why `workflows:`?** Claude Code has built-in `/plan` and `/review` commands. Using `name: workflows:plan` in frontmatter creates a unique `/workflows:plan` command with no collision.
+**Why `ce:`?** Claude Code has built-in `/plan` and `/review` commands. The `ce:` namespace (short for compound-engineering) makes it immediately clear these commands belong to this plugin. The legacy `workflows:` prefix is still supported as deprecated aliases that forward to the `ce:*` equivalents.
 
 ## Skill Compliance Checklist
 
@@ -72,6 +75,11 @@ When adding or modifying skills, verify compliance with skill-creator spec:
 
 - [ ] Use imperative/infinitive form (verb-first instructions)
 - [ ] Avoid second person ("you should") - use objective language ("To accomplish X, do Y")
+
+### AskUserQuestion Usage
+
+- [ ] If the skill uses `AskUserQuestion`, it must include an "Interaction Method" preamble explaining the numbered-list fallback for non-Claude environments
+- [ ] Prefer avoiding `AskUserQuestion` entirely (see `brainstorming/SKILL.md` pattern) for skills intended to run cross-platform
 
 ### Quick Validation Command
 

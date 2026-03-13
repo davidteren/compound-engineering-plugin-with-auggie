@@ -5,11 +5,110 @@ All notable changes to the compound-engineering plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.39.0] - 2026-03-10
+
+### Added
+
+- **ce:compound context budget precheck** — Warns when context is constrained and offers compact-safe mode to avoid compaction mid-compound ([#235](https://github.com/EveryInc/compound-engineering-plugin/pull/235))
+- **ce:plan daily sequence numbers** — Plan filenames now include a 3-digit daily sequence number (e.g., `2026-03-10-001-feat-...`) to prevent collisions ([#238](https://github.com/EveryInc/compound-engineering-plugin/pull/238))
+- **ce:review serial mode** — Pass `--serial` flag (or auto-detects when 6+ agents configured) to run review agents sequentially, preventing context limit crashes ([#237](https://github.com/EveryInc/compound-engineering-plugin/pull/237))
+- **agent-browser inspection & debugging commands** — Added JS eval, console/errors, network, storage, device emulation, element debugging, recording/tracing, tabs, and advanced mouse commands to agent-browser skill ([#236](https://github.com/EveryInc/compound-engineering-plugin/pull/236))
+- **test-browser port detection** — Auto-detects dev server port from CLAUDE.md, package.json, or .env files; supports `--port` flag ([#233](https://github.com/EveryInc/compound-engineering-plugin/pull/233))
+- **lfg phase gating** — Added explicit GATE checks between /lfg steps to enforce plan-before-work ordering ([#231](https://github.com/EveryInc/compound-engineering-plugin/pull/231))
+
+### Fixed
+
+- **Context7 API key auth** — MCP server config now passes `CONTEXT7_API_KEY` via `x-api-key` header to avoid anonymous rate limits ([#232](https://github.com/EveryInc/compound-engineering-plugin/pull/232))
+- **CLI: MCP server merge order** — `sync` now correctly overwrites same-named MCP servers with plugin values instead of preserving stale entries
+
+### Removed
+
+- **every-style-editor agent** — Removed duplicate agent; functionality already exists as `every-style-editor` skill ([#234](https://github.com/EveryInc/compound-engineering-plugin/pull/234))
+
+### Contributors
+
+- Matt Van Horn ([@mvanhorn](https://x.com/mvanhorn)) — PRs #231–#238
+
+---
+
+## [2.38.1] - 2026-03-01
+
+### Fixed
+
+- **Cross-platform `AskUserQuestion` fallback** — `setup` skill and `create-new-skill`/`add-workflow` workflows now include an "Interaction Method" preamble that instructs non-Claude LLMs (Codex, Gemini, Copilot, Kiro) to use numbered lists instead of `AskUserQuestion`, preventing silent auto-configuration. ([#204](https://github.com/EveryInc/compound-engineering-plugin/issues/204))
+- **Codex AGENTS.md `AskUserQuestion` mapping** — Strengthened from "ask the user in chat" to structured numbered-list guidance with multi-select support and a "never skip or auto-configure" rule.
+- **Skill compliance checklist** — Added `AskUserQuestion` lint rule to `CLAUDE.md` to prevent recurrence.
+
+---
+
+## [2.38.0] - 2026-03-01
+
+### Changed
+- `workflows:plan`, `workflows:work`, `workflows:review`, `workflows:brainstorm`, `workflows:compound` renamed to `ce:plan`, `ce:work`, `ce:review`, `ce:brainstorm`, `ce:compound` for clarity — the `ce:` prefix unambiguously identifies these as compound-engineering commands
+
+### Deprecated
+- `workflows:*` commands — all five remain functional as aliases that forward to their `ce:*` equivalents with a deprecation notice. Will be removed in a future version.
+
+---
+
+## [2.37.2] - 2026-03-01
+
+### Added
+
+- **CLI: auto-detect install targets** — `bunx @every-env/compound-plugin install compound-engineering --to all` auto-detects installed AI coding tools and installs to all of them in one command. ([#191](https://github.com/EveryInc/compound-engineering-plugin/pull/191))
+- **CLI: Gemini sync** — `sync --target gemini` symlinks personal skills to `.gemini/skills/` and merges MCP servers into `.gemini/settings.json`. ([#191](https://github.com/EveryInc/compound-engineering-plugin/pull/191))
+- **CLI: sync defaults to `--target all`** — Running `sync` with no target now syncs to all detected tools automatically. ([#191](https://github.com/EveryInc/compound-engineering-plugin/pull/191))
+
+---
+
+## [2.37.1] - 2026-03-01
+
+### Fixed
+
+- **`/workflows:review` rendering** — Fixed broken markdown output: "Next Steps" items 3 & 4 and Severity Breakdown no longer leak outside the Summary Report template, section numbering fixed (was jumping 5→7, now correct), removed orphaned fenced code block delimiters that caused the entire End-to-End Testing section to render as a code block, and fixed unclosed quoted string in section 1. ([#214](https://github.com/EveryInc/compound-engineering-plugin/pull/214)) — thanks [@XSAM](https://github.com/XSAM)!
+- **`.worktrees` gitignore** — Added `.worktrees/` to `.gitignore` to prevent worktree directories created by the `git-worktree` skill from being tracked. ([#213](https://github.com/EveryInc/compound-engineering-plugin/pull/213)) — thanks [@XSAM](https://github.com/XSAM)!
+
+---
+
+## [2.37.0] - 2026-03-01
+
+### Added
+
+- **`proof` skill** — Create, edit, comment on, and share markdown documents via Proof's web API and local bridge. Supports document creation, track-changes suggestions, comments, and bulk rewrites. No authentication required for creating shared documents.
+- **Optional Proof sharing in `/workflows:brainstorm`** — "Share to Proof" is now a menu option in Phase 4 handoff, letting you upload the brainstorm document when you want to, rather than automatically on every run.
+- **Optional Proof sharing in `/workflows:plan`** — "Share to Proof" is now a menu option in Post-Generation Options, letting you upload the plan file on demand rather than automatically.
+
+---
+
+## [2.36.0] - 2026-03-01
+
+### Added
+
+- **OpenClaw install target** — `bunx @every-env/compound-plugin install compound-engineering --to openclaw` now installs the plugin to OpenClaw's extensions directory. ([#217](https://github.com/EveryInc/compound-engineering-plugin/pull/217)) — thanks [@TrendpilotAI](https://github.com/TrendpilotAI)!
+- **Qwen Code install target** — `bunx @every-env/compound-plugin install compound-engineering --to qwen` now installs the plugin to Qwen Code's extensions directory. ([#220](https://github.com/EveryInc/compound-engineering-plugin/pull/220)) — thanks [@rlam3](https://github.com/rlam3)!
+- **Windsurf install target** — `bunx @every-env/compound-plugin install compound-engineering --to windsurf` converts plugins to Windsurf format. Agents become Windsurf skills, commands become flat workflows, and MCP servers write to `mcp_config.json`. Defaults to global scope (`~/.codeium/windsurf/`); use `--scope workspace` for project-level output. ([#202](https://github.com/EveryInc/compound-engineering-plugin/pull/202)) — thanks [@rburnham52](https://github.com/rburnham52)!
+
+### Fixed
+
+- **`create-agent-skill` / `heal-skill` YAML crash** — `argument-hint` values containing special characters now properly quoted to prevent YAML parse errors in the Claude Code TUI. ([#219](https://github.com/EveryInc/compound-engineering-plugin/pull/219)) — thanks [@solon](https://github.com/solon)!
+- **`resolve-pr-parallel` skill name** — Renamed from `resolve_pr_parallel` (underscore) to `resolve-pr-parallel` (hyphen) to match the standard naming convention. ([#202](https://github.com/EveryInc/compound-engineering-plugin/pull/202)) — thanks [@rburnham52](https://github.com/rburnham52)!
+
+---
+
+## [2.35.2] - 2026-02-20
+
+### Changed
+
+- **`/workflows:plan` brainstorm integration** — When plan finds a brainstorm document, it now heavily references it throughout. Added `origin:` frontmatter field to plan templates, brainstorm cross-check in final review, and "Sources" section at the bottom of all three plan templates (MINIMAL, MORE, A LOT). Brainstorm decisions are carried forward with explicit references (`see brainstorm: <path>`) and a mandatory scan before finalizing ensures nothing is dropped.
+
+---
+
 ## [2.35.1] - 2026-02-18
 
 ### Changed
 
-- **Rebased on upstream v2.35.0** — Synced fork with upstream, preserving codebase-retrieval (auggie-mcp) integration across all agents, commands, and skills.
+- **`/workflows:work` system-wide test check** — Added "System-Wide Test Check" to the task execution loop. Before marking a task done, forces five questions: what callbacks/middleware fire when this runs? Do tests exercise the real chain or just mocked isolation? Can failure leave orphaned state? What other interfaces need the same change? Do error strategies align across layers? Includes skip criteria for leaf-node changes. Also added integration test guidance to the "Test Continuously" section.
+- **`/workflows:plan` system-wide impact templates** — Added "System-Wide Impact" section to MORE and A LOT plan templates (interaction graph, error propagation, state lifecycle, API surface parity, integration test scenarios) as lightweight prompts to flag risks during planning.
 
 ---
 
@@ -91,7 +190,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - All 29 agent descriptions trimmed from ~1,400 to ~180 chars avg (examples moved to agent body)
   - 18 manual commands marked `disable-model-invocation: true` (side-effect commands like `/lfg`, `/deploy-docs`, `/triage`, etc.)
   - 6 manual skills marked `disable-model-invocation: true` (`orchestrating-swarms`, `git-worktree`, `skill-creator`, `compound-docs`, `file-todos`, `resolve-pr-parallel`)
-- **git-worktree**: Remove confirmation prompt for worktree creation ([@Sam Xie](https://github.com/samxie))
+- **git-worktree**: Remove confirmation prompt for worktree creation ([@Sam Xie](https://github.com/XSAM))
 - **Prevent subagents from writing intermediary files** in compound workflow ([@Trevin Chow](https://github.com/trevin))
 
 ### Fixed

@@ -1,11 +1,11 @@
-# Every Marketplace - Claude Code Plugin Marketplace
+# compound-engineering-plugin - Claude Code Plugin Marketplace
 
 This repository is a Claude Code plugin marketplace that distributes the `compound-engineering` plugin to developers building with AI-powered tools.
 
 ## Repository Structure
 
 ```
-every-marketplace/
+compound-engineering-plugin/
 ├── .claude-plugin/
 │   └── marketplace.json          # Marketplace catalog (lists available plugins)
 ├── docs/                         # Documentation site (GitHub Pages)
@@ -37,6 +37,20 @@ When working on this repository, follow the compounding engineering process:
 4. **Codify** → Update this CLAUDE.md with learnings
 
 ## Working with This Repository
+
+## CLI Release Versioning
+
+The repository has two separate version surfaces:
+
+1. **Root CLI package** — `package.json`, root `CHANGELOG.md`, and repo `v*` tags all share one release line managed by semantic-release on `main`.
+2. **Embedded marketplace plugin metadata** — `plugins/compound-engineering/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` track the distributed Claude plugin metadata and can differ from the root CLI package version.
+
+Rules:
+
+- Do not start a separate root CLI version stream. The root CLI follows the repo tag line.
+- Do not hand-bump the root CLI `package.json` or root `CHANGELOG.md` for routine feature work. Use conventional commits and let semantic-release write the released root version back to git.
+- Keep the root `CHANGELOG.md` header block aligned with `.releaserc.json` `changelogTitle`. If they drift, semantic-release will prepend release notes above the header.
+- Continue updating embedded plugin metadata when the plugin contents themselves change.
 
 ### Adding a New Plugin
 
@@ -261,7 +275,7 @@ python -m http.server 8000
 1. Install the marketplace locally:
 
    ```bash
-   claude /plugin marketplace add /Users/yourusername/every-marketplace
+   claude /plugin marketplace add /Users/yourusername/compound-engineering-plugin
    ```
 
 2. Install the plugin:

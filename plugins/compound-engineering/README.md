@@ -6,9 +6,9 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 
 | Component | Count |
 |-----------|-------|
-| Agents | 29 |
+| Agents | 28 |
 | Commands | 22 |
-| Skills | 19 |
+| Skills | 20 |
 | MCP Servers | 1 |
 
 ## Agents
@@ -53,12 +53,11 @@ Agents are organized into categories for easier discovery.
 | `design-iterator` | Iteratively refine UI through systematic design iterations |
 | `figma-design-sync` | Synchronize web implementations with Figma designs |
 
-### Workflow (5)
+### Workflow (4)
 
 | Agent | Description |
 |-------|-------------|
 | `bug-reproduction-validator` | Systematically reproduce and validate bug reports |
-| `every-style-editor` | Edit content to conform to Every's style guide |
 | `lint` | Run linting and code quality checks on Ruby and ERB files |
 | `pr-comment-resolver` | Address PR comments and implement fixes |
 | `spec-flow-analyzer` | Analyze user flows and identify gaps in specifications |
@@ -73,15 +72,17 @@ Agents are organized into categories for easier discovery.
 
 ### Workflow Commands
 
-Core workflow commands use `workflows:` prefix to avoid collisions with built-in commands:
+Core workflow commands use `ce:` prefix to unambiguously identify them as compound-engineering commands:
 
 | Command | Description |
 |---------|-------------|
-| `/workflows:brainstorm` | Explore requirements and approaches before planning |
-| `/workflows:plan` | Create implementation plans |
-| `/workflows:review` | Run comprehensive code reviews |
-| `/workflows:work` | Execute work items systematically |
-| `/workflows:compound` | Document solved problems to compound team knowledge |
+| `/ce:brainstorm` | Explore requirements and approaches before planning |
+| `/ce:plan` | Create implementation plans |
+| `/ce:review` | Run comprehensive code reviews |
+| `/ce:work` | Execute work items systematically |
+| `/ce:compound` | Document solved problems to compound team knowledge |
+
+> **Deprecated aliases:** `/workflows:plan`, `/workflows:work`, `/workflows:review`, `/workflows:brainstorm`, `/workflows:compound` still work but show a deprecation warning. Use `ce:*` equivalents.
 
 ### Utility Commands
 
@@ -134,6 +135,7 @@ Core workflow commands use `workflows:` prefix to avoid collisions with built-in
 | `every-style-editor` | Review copy for Every's style guide compliance |
 | `file-todos` | File-based todo tracking system |
 | `git-worktree` | Manage Git worktrees for parallel development |
+| `proof` | Create, edit, and share documents via Proof collaborative editor |
 | `resolve-pr-parallel` | Resolve PR review comments in parallel |
 | `setup` | Configure which review agents run for your project |
 
@@ -187,6 +189,8 @@ Supports 100+ frameworks including Rails, React, Next.js, Vue, Django, Laravel, 
 
 MCP servers start automatically when the plugin is enabled.
 
+**Authentication:** To avoid anonymous rate limits, set the `CONTEXT7_API_KEY` environment variable with your Context7 API key. The plugin passes this automatically via the `x-api-key` header. Without it, requests go unauthenticated and will quickly hit the anonymous quota limit.
+
 ### Optional: Augment Codebase Retrieval (auggie-mcp)
 
 Many agents in this plugin are enhanced by `mcp__auggie-mcp__codebase-retrieval`, which provides semantic, embedding-based code search. This is more effective than text-based search for understanding architecture, finding patterns, and discovering related code.
@@ -225,13 +229,16 @@ claude /plugin install compound-engineering
   "mcpServers": {
     "context7": {
       "type": "http",
-      "url": "https://mcp.context7.com/mcp"
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "x-api-key": "${CONTEXT7_API_KEY:-}"
+      }
     }
   }
 }
 ```
 
-Or add it globally in `~/.claude/settings.json` for all projects.
+Set `CONTEXT7_API_KEY` in your environment to authenticate. Or add it globally in `~/.claude/settings.json` for all projects.
 
 ## Version History
 
