@@ -115,6 +115,7 @@ Ensure that the code is ready for analysis (either in worktree or on current bra
 <protected_artifacts>
 The following paths are compound-engineering pipeline artifacts and must never be flagged for deletion, removal, or gitignore by any review agent:
 
+- `docs/brainstorms/*-requirements.md` — Requirements documents created by `/ce:brainstorm`. These are the product-definition artifacts that planning depends on.
 - `docs/plans/*.md` — Plan files created by `/ce:plan`. These are living documents that track implementation progress (checkboxes are checked off by `/ce:work`).
 - `docs/solutions/*.md` — Solution documents created during the pipeline.
 
@@ -175,8 +176,8 @@ For each agent in review_agents:
 ```
 
 Always run these last regardless of mode:
-- Task agent-native-reviewer(PR content) - Verify new features are agent-accessible
-- Task learnings-researcher(PR content) - Search docs/solutions/ for past issues related to this PR's modules and patterns
+- Task compound-engineering:review:agent-native-reviewer(PR content) - Verify new features are agent-accessible
+- Task compound-engineering:research:learnings-researcher(PR content) - Search docs/solutions/ for past issues related to this PR's modules and patterns
 
 </parallel_tasks>
 
@@ -188,9 +189,9 @@ These agents are run ONLY when the PR matches specific criteria. Check the PR fi
 
 **MIGRATIONS: If PR contains database migrations, schema.rb, or data backfills:**
 
-- Task schema-drift-detector(PR content) - Detects unrelated schema.rb changes by cross-referencing against included migrations (run FIRST)
-- Task data-migration-expert(PR content) - Validates ID mappings match production, checks for swapped values, verifies rollback safety
-- Task deployment-verification-agent(PR content) - Creates Go/No-Go deployment checklist with SQL verification queries
+- Task compound-engineering:review:schema-drift-detector(PR content) - Detects unrelated schema.rb changes by cross-referencing against included migrations (run FIRST)
+- Task compound-engineering:review:data-migration-expert(PR content) - Validates ID mappings match production, checks for swapped values, verifies rollback safety
+- Task compound-engineering:review:deployment-verification-agent(PR content) - Creates Go/No-Go deployment checklist with SQL verification queries
 
 **When to run:**
 - PR includes files matching `db/migrate/*.rb` or `db/schema.rb`
@@ -302,7 +303,7 @@ Complete system context map with component interactions
 
 ### 4. Simplification and Minimalism Review
 
-Run the Task code-simplicity-reviewer() to see if we can simplify the code.
+Run the Task compound-engineering:review:code-simplicity-reviewer() to see if we can simplify the code.
 
 ### 5. Findings Synthesis and Todo Creation Using file-todos Skill
 
@@ -319,7 +320,7 @@ Remove duplicates, prioritize by severity and impact.
 
 - [ ] Collect findings from all parallel agents
 - [ ] Surface learnings-researcher results: if past solutions are relevant, flag them as "Known Pattern" with links to docs/solutions/ files
-- [ ] Discard any findings that recommend deleting or gitignoring files in `docs/plans/` or `docs/solutions/` (see Protected Artifacts above)
+- [ ] Discard any findings that recommend deleting or gitignoring files in `docs/brainstorms/`, `docs/plans/`, or `docs/solutions/` (see Protected Artifacts above)
 - [ ] **FILTER OUT domain commentary** (see Review Philosophy above):
   - Discard security-domain findings (XSS, CSRF, open redirects) unless fundamental bugs
   - Discard performance-domain findings (bundle size, caching, lazy loading) unless blocking issues
@@ -517,7 +518,7 @@ After creating all todo files, present comprehensive summary:
 3. **Work on Approved Todos**:
 
    ```bash
-   /resolve_todo_parallel  # Fix all approved items efficiently
+   /resolve-todo-parallel  # Fix all approved items efficiently
    ```
 
 4. **Track Progress**:

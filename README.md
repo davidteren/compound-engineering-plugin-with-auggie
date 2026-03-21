@@ -60,7 +60,32 @@ bunx @every-env/compound-plugin install compound-engineering --to qwen
 bunx @every-env/compound-plugin install compound-engineering --to all
 ```
 
-Local dev:
+### Local Development
+
+When developing and testing local changes to the plugin:
+
+**Claude Code** — add a shell alias so your local copy loads alongside your normal plugins:
+
+```bash
+# add to ~/.zshrc or ~/.bashrc
+alias claude-dev-ce='claude --plugin-dir ~/code/compound-engineering-plugin/plugins/compound-engineering'
+```
+
+One-liner to append it:
+
+```bash
+echo "alias claude-dev-ce='claude --plugin-dir ~/code/compound-engineering-plugin/plugins/compound-engineering'" >> ~/.zshrc
+```
+
+Then run `claude-dev-ce` instead of `claude` to test your changes. Your production install stays untouched.
+
+**Codex** — point the install command at your local path:
+
+```bash
+bun run src/index.ts install ./plugins/compound-engineering --to codex
+```
+
+**Other targets** — same pattern, swap the target:
 
 ```bash
 bun run src/index.ts install ./plugins/compound-engineering --to opencode
@@ -72,7 +97,7 @@ bun run src/index.ts install ./plugins/compound-engineering --to opencode
 | Target | Output path | Notes |
 |--------|------------|-------|
 | `opencode` | `~/.config/opencode/` | Commands as `.md` files; `opencode.json` MCP config deep-merged; backups made before overwriting |
-| `codex` | `~/.codex/prompts` + `~/.codex/skills` | Each command becomes a prompt + skill pair; descriptions truncated to 1024 chars |
+| `codex` | `~/.codex/prompts` + `~/.codex/skills` | Claude commands become prompt + skill pairs; canonical `ce:*` workflow skills also get prompt wrappers; deprecated `workflows:*` aliases are omitted |
 | `droid` | `~/.factory/` | Tool names mapped (`Bash`→`Execute`, `Write`→`Create`); namespace prefixes stripped |
 | `pi` | `~/.pi/agent/` | Prompts, skills, extensions, and `mcporter.json` for MCPorter interoperability |
 | `gemini` | `.gemini/` | Skills from agents; commands as `.toml`; namespaced commands become directories (`workflows:plan` → `commands/workflows/plan.toml`) |
@@ -159,19 +184,24 @@ Notes:
 
 ```
 Brainstorm → Plan → Work → Review → Compound → Repeat
+    ↑
+  Ideate (optional — when you need ideas)
 ```
 
 | Command | Purpose |
 |---------|---------|
+| `/ce:ideate` | Discover high-impact project improvements through divergent ideation and adversarial filtering |
 | `/ce:brainstorm` | Explore requirements and approaches before planning |
 | `/ce:plan` | Turn feature ideas into detailed implementation plans |
 | `/ce:work` | Execute plans with worktrees and task tracking |
 | `/ce:review` | Multi-agent code review before merging |
 | `/ce:compound` | Document learnings to make future work easier |
 
-The `brainstorming` skill supports `/ce:brainstorm` with collaborative dialogue to clarify requirements and compare approaches before committing to a plan.
+The `/ce:ideate` skill proactively surfaces strong improvement ideas, and `/ce:brainstorm` then clarifies the selected one before committing to a plan.
 
 Each cycle compounds: brainstorms sharpen plans, plans inform future plans, reviews catch more issues, patterns get documented.
+
+> **Beta:** Experimental versions of `/ce:plan` and `/deepen-plan` are available as `/ce:plan-beta` and `/deepen-plan-beta`. See the [plugin README](plugins/compound-engineering/README.md#beta-skills) for details.
 
 ## Philosophy
 

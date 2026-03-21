@@ -22,38 +22,39 @@ Do not proceed until you have a clear feature description from the user.
 
 ### 0. Idea Refinement
 
-**Check for brainstorm output first:**
+**Check for requirements document first:**
 
-Before asking questions, look for recent brainstorm documents in `docs/brainstorms/` that match this feature:
+Before asking questions, look for recent requirements documents in `docs/brainstorms/` that match this feature:
 
 ```bash
-ls -la docs/brainstorms/*.md 2>/dev/null | head -10
+ls -la docs/brainstorms/*-requirements.md 2>/dev/null | head -10
 ```
 
-**Relevance criteria:** A brainstorm is relevant if:
+**Relevance criteria:** A requirements document is relevant if:
 - The topic (from filename or YAML frontmatter) semantically matches the feature description
 - Created within the last 14 days
 - If multiple candidates match, use the most recent one
 
-**If a relevant brainstorm exists:**
-1. Read the brainstorm document **thoroughly** — every section matters
-2. Announce: "Found brainstorm from [date]: [topic]. Using as foundation for planning."
+**If a relevant requirements document exists:**
+1. Read the source document **thoroughly** — every section matters
+2. Announce: "Found source document from [date]: [topic]. Using as foundation for planning."
 3. Extract and carry forward **ALL** of the following into the plan:
    - Key decisions and their rationale
    - Chosen approach and why alternatives were rejected
-   - Constraints and requirements discovered during brainstorming
-   - Open questions (flag these for resolution during planning)
+   - Problem framing, constraints, and requirements captured during brainstorming
+   - Outstanding questions, preserving whether they block planning or are intentionally deferred
    - Success criteria and scope boundaries
-   - Any specific technical choices or patterns discussed
-4. **Skip the idea refinement questions below** — the brainstorm already answered WHAT to build
-5. Use brainstorm content as the **primary input** to research and planning phases
-6. **Critical: The brainstorm is the origin document.** Throughout the plan, reference specific decisions with `(see brainstorm: docs/brainstorms/<filename>)` when carrying forward conclusions. Do not paraphrase decisions in a way that loses their original context — link back to the source.
-7. **Do not omit brainstorm content** — if the brainstorm discussed it, the plan must address it (even if briefly). Scan each brainstorm section before finalizing the plan to verify nothing was dropped.
+   - Dependencies and assumptions, plus any high-level technical direction only when the origin document is inherently technical
+4. **Skip the idea refinement questions below** — the source document already answered WHAT to build
+5. Use source document content as the **primary input** to research and planning phases
+6. **Critical: The source document is the origin document.** Throughout the plan, reference specific decisions with `(see origin: <source-path>)` when carrying forward conclusions. Do not paraphrase decisions in a way that loses their original context — link back to the source.
+7. **Do not omit source content** — if the source document discussed it, the plan must address it (even if briefly). Scan each section before finalizing the plan to verify nothing was dropped.
+8. **If `Resolve Before Planning` contains any items, stop.** Do not proceed with planning. Tell the user planning is blocked by unanswered brainstorm questions and direct them to resume `/ce:brainstorm` or answer those questions first.
 
-**If multiple brainstorms could match:**
-Use **AskUserQuestion tool** to ask which brainstorm to use, or whether to proceed without one.
+**If multiple source documents could match:**
+Use **AskUserQuestion tool** to ask which source document to use, or whether to proceed without one.
 
-**If no brainstorm found (or not relevant), run idea refinement:**
+**If no requirements document is found (or not relevant), run idea refinement:**
 
 Refine the idea through collaborative dialogue using the **AskUserQuestion tool**:
 
@@ -94,11 +95,11 @@ This informs the repo-research-analyst and learnings-researcher agents launched 
 
 Run these agents **in parallel** to gather local context:
 
-- Task repo-research-analyst(feature_description)
-- Task learnings-researcher(feature_description)
+- Task compound-engineering:research:repo-research-analyst(feature_description)
+- Task compound-engineering:research:learnings-researcher(feature_description)
 
 **What to look for:**
-- **Repo research:** existing patterns, CLAUDE.md guidance, technology familiarity, pattern consistency
+- **Repo research:** existing patterns, AGENTS.md guidance, technology familiarity, pattern consistency
 - **Learnings:** documented solutions in `docs/solutions/` that might apply (gotchas, patterns, lessons learned)
 
 These findings inform the next step.
@@ -109,7 +110,7 @@ Based on signals from Step 0 and findings from Step 1, decide on external resear
 
 **High-risk topics → always research.** Security, payments, external APIs, data privacy. The cost of missing something is too high. This takes precedence over speed signals.
 
-**Strong local context → skip external research.** Codebase has good patterns, CLAUDE.md has guidance, user knows what they want. External research adds little value.
+**Strong local context -> skip external research.** Codebase has good patterns, AGENTS.md has guidance, user knows what they want. External research adds little value.
 
 **Uncertainty or unfamiliar territory → research.** User is exploring, codebase has no examples, new technology. External perspective is valuable.
 
@@ -125,8 +126,8 @@ Examples:
 
 Run these agents in parallel:
 
-- Task best-practices-researcher(feature_description)
-- Task framework-docs-researcher(feature_description)
+- Task compound-engineering:research:best-practices-researcher(feature_description)
+- Task compound-engineering:research:framework-docs-researcher(feature_description)
 
 ### 1.6. Consolidate Research
 
@@ -136,7 +137,7 @@ After all research steps complete, consolidate findings:
 - **Include relevant institutional learnings** from `docs/solutions/` (key insights, gotchas to avoid)
 - Note external documentation URLs and best practices (if external research was done)
 - List related issues or PRs discovered
-- Capture CLAUDE.md conventions
+- Capture AGENTS.md conventions
 
 **Optional validation:** Briefly summarize findings and ask if anything looks off or missing before proceeding to planning.
 
@@ -203,7 +204,7 @@ title: [Issue Title]
 type: [feat|fix|refactor]
 status: active
 date: YYYY-MM-DD
-origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from brainstorm, otherwise omit
+origin: docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md  # if originated from a requirements doc, otherwise omit
 ---
 
 # [Issue Title]
@@ -233,7 +234,7 @@ end
 
 ## Sources
 
-- **Origin brainstorm:** [docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md](path) — include if plan originated from a brainstorm
+- **Origin document:** [docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md](path) — include if plan originated from an upstream requirements doc
 - Related issue: #[issue_number]
 - Documentation: [relevant_docs_url]
 ````
@@ -258,7 +259,7 @@ title: [Issue Title]
 type: [feat|fix|refactor]
 status: active
 date: YYYY-MM-DD
-origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from brainstorm, otherwise omit
+origin: docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md  # if originated from a requirements doc, otherwise omit
 ---
 
 # [Issue Title]
@@ -305,7 +306,7 @@ origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from 
 
 ## Sources & References
 
-- **Origin brainstorm:** [docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md](path) — include if plan originated from a brainstorm
+- **Origin document:** [docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md](path) — include if plan originated from an upstream requirements doc
 - Similar implementations: [file_path:line_number]
 - Best practices: [documentation_url]
 - Related PRs: #[pr_number]
@@ -333,7 +334,7 @@ title: [Issue Title]
 type: [feat|fix|refactor]
 status: active
 date: YYYY-MM-DD
-origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from brainstorm, otherwise omit
+origin: docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md  # if originated from a requirements doc, otherwise omit
 ---
 
 # [Issue Title]
@@ -448,7 +449,7 @@ origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from 
 
 ### Origin
 
-- **Brainstorm document:** [docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md](path) — include if plan originated from a brainstorm. Key decisions carried forward: [list 2-3 major decisions from brainstorm]
+- **Origin document:** [docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md](path) — include if plan originated from an upstream requirements doc. Key decisions carried forward: [list 2-3 major decisions from the origin]
 
 ### Internal References
 
@@ -527,15 +528,15 @@ end
 
 ### 6. Final Review & Submission
 
-**Brainstorm cross-check (if plan originated from a brainstorm):**
+**Origin document cross-check (if plan originated from a requirements doc):**
 
-Before finalizing, re-read the brainstorm document and verify:
-- [ ] Every key decision from the brainstorm is reflected in the plan
-- [ ] The chosen approach matches what was decided in the brainstorm
-- [ ] Constraints and requirements from the brainstorm are captured in acceptance criteria
-- [ ] Open questions from the brainstorm are either resolved or flagged
-- [ ] The `origin:` frontmatter field points to the brainstorm file
-- [ ] The Sources section includes the brainstorm with a summary of carried-forward decisions
+Before finalizing, re-read the origin document and verify:
+- [ ] Every key decision from the origin document is reflected in the plan
+- [ ] The chosen approach matches what was decided in the origin document
+- [ ] Constraints and requirements from the origin document are captured in acceptance criteria
+- [ ] Open questions from the origin document are either resolved or flagged
+- [ ] The `origin:` frontmatter field points to the correct source file
+- [ ] The Sources section includes the origin document with a summary of carried-forward decisions
 
 **Pre-submission Checklist:**
 
@@ -622,9 +623,9 @@ Loop back to options after Simplify or Other changes until user selects `/ce:wor
 
 ## Issue Creation
 
-When user selects "Create Issue", detect their project tracker from CLAUDE.md:
+When user selects "Create Issue", detect their project tracker from AGENTS.md:
 
-1. **Check for tracker preference** in user's CLAUDE.md (global or project):
+1. **Check for tracker preference** in the user's AGENTS.md (global or project). If AGENTS.md is absent, fall back to CLAUDE.md:
    - Look for `project_tracker: github` or `project_tracker: linear`
    - Or look for mentions of "GitHub Issues" or "Linear" in their workflow section
 
@@ -644,7 +645,7 @@ When user selects "Create Issue", detect their project tracker from CLAUDE.md:
 
 4. **If no tracker configured:**
    Ask user: "Which project tracker do you use? (GitHub/Linear/Other)"
-   - Suggest adding `project_tracker: github` or `project_tracker: linear` to their CLAUDE.md
+   - Suggest adding `project_tracker: github` or `project_tracker: linear` to their AGENTS.md
 
 5. **After creation:**
    - Display the issue URL

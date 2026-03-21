@@ -53,10 +53,10 @@ export function convertClaudeToKiro(
     convertCommandToSkill(command, usedSkillNames, agentNames),
   )
 
-  // Convert MCP servers (stdio only)
+  // Convert MCP servers (stdio and remote)
   const mcpServers = convertMcpServers(plugin.mcpServers)
 
-  // Build steering files from CLAUDE.md
+  // Build steering files from repo instruction files, preferring AGENTS.md.
   const steeringFiles = buildSteeringFiles(plugin, agentNames)
 
   // Warn about hooks
@@ -177,30 +177,31 @@ function convertMcpServers(
 
   const result: Record<string, KiroMcpServer> = {}
   for (const [name, server] of Object.entries(servers)) {
-    if (!server.command) {
+    if (server.command) {
+      const entry: KiroMcpServer = { command: server.command }
+      if (server.args && server.args.length > 0) entry.args = server.args
+      if (server.env && Object.keys(server.env).length > 0) entry.env = server.env
+      result[name] = entry
+    } else if (server.url) {
+      const entry: KiroMcpServer = { url: server.url }
+      if (server.headers && Object.keys(server.headers).length > 0) entry.headers = server.headers
+      result[name] = entry
+    } else {
       console.warn(
-        `Warning: MCP server "${name}" has no command (HTTP/SSE transport). Kiro only supports stdio. Skipping.`,
+        `Warning: MCP server "${name}" has no command or url. Skipping.`,
       )
-      continue
     }
-
-    const entry: KiroMcpServer = { command: server.command }
-    if (server.args && server.args.length > 0) entry.args = server.args
-    if (server.env && Object.keys(server.env).length > 0) entry.env = server.env
-
-    console.log(`MCP server "${name}" will execute: ${server.command}${server.args ? " " + server.args.join(" ") : ""}`)
-    result[name] = entry
   }
   return result
 }
 
 function buildSteeringFiles(plugin: ClaudePlugin, knownAgentNames: string[]): KiroSteeringFile[] {
-  const claudeMdPath = path.join(plugin.root, "CLAUDE.md")
-  if (!existsSync(claudeMdPath)) return []
+  const instructionPath = resolveInstructionPath(plugin.root)
+  if (!instructionPath) return []
 
   let content: string
   try {
-    content = readFileSync(claudeMdPath, "utf8")
+    content = readFileSync(instructionPath, "utf8")
   } catch {
     return []
   }
@@ -209,6 +210,16 @@ function buildSteeringFiles(plugin: ClaudePlugin, knownAgentNames: string[]): Ki
 
   const transformed = transformContentForKiro(content, knownAgentNames)
   return [{ name: "compound-engineering", content: transformed }]
+}
+
+function resolveInstructionPath(root: string): string | null {
+  const agentsPath = path.join(root, "AGENTS.md")
+  if (existsSync(agentsPath)) return agentsPath
+
+  const claudePath = path.join(root, "CLAUDE.md")
+  if (existsSync(claudePath)) return claudePath
+
+  return null
 }
 
 function normalizeName(value: string): string {
