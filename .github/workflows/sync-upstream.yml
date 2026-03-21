@@ -1,0 +1,270 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    # Weekly on Mondays at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview changes without creating PR'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/EveryInc/compound-engineering-plugin.git || true
+          git fetch upstream
+
+      - name: Check for new commits
+        id: check
+        run: |
+          MERGE_BASE=$(git merge-base main upstream/main)
+          UPSTREAM_COMMITS=$(git log --oneline "$MERGE_BASE..upstream/main" | wc -l | tr -d ' ')
+          echo "merge_base=$MERGE_BASE" >> "$GITHUB_OUTPUT"
+          echo "upstream_commits=$UPSTREAM_COMMITS" >> "$GITHUB_OUTPUT"
+
+          if [ "$UPSTREAM_COMMITS" -eq 0 ]; then
+            echo "No new upstream commits. Nothing to sync."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found $UPSTREAM_COMMITS upstream commits to merge."
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Get upstream version
+          UPSTREAM_VERSION=$(git show upstream/main:plugins/compound-engineering/.claude-plugin/plugin.json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('version','unknown'))" 2>/dev/null || echo "unknown")
+          CURRENT_VERSION=$(python3 -c "import json; print(json.load(open('plugins/compound-engineering/.claude-plugin/plugin.json')).get('version','unknown'))" 2>/dev/null || echo "unknown")
+          echo "upstream_version=$UPSTREAM_VERSION" >> "$GITHUB_OUTPUT"
+          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Generate diff summary
+        if: steps.check.outputs.has_changes == 'true'
+        id: diff
+        run: |
+          MERGE_BASE=${{ steps.check.outputs.merge_base }}
+
+          # Files changed on both sides (potential conflicts)
+          BOTH_CHANGED=$(comm -12 \
+            <(git diff --name-only "$MERGE_BASE..HEAD" | sort) \
+            <(git diff --name-only "$MERGE_BASE..upstream/main" | sort))
+
+          # New files from upstream
+          NEW_AGENTS=$(git diff --name-only --diff-filter=A "$MERGE_BASE..upstream/main" -- 'plugins/compound-engineering/agents/**/*.md' || true)
+          NEW_SKILLS=$(git diff --name-only --diff-filter=A "$MERGE_BASE..upstream/main" -- 'plugins/compound-engineering/skills/**/SKILL.md' || true)
+
+          # Key upstream changes
+          KEY_CHANGES=$(git log --oneline "$MERGE_BASE..upstream/main" | grep -iE "feat|add|new|migrat|refactor|break" | head -15 || true)
+
+          # Save for PR body
+          {
+            echo "BOTH_CHANGED<<HEREDOC_EOF"
+            echo "$BOTH_CHANGED"
+            echo "HEREDOC_EOF"
+          } >> "$GITHUB_ENV"
+
+          {
+            echo "NEW_AGENTS<<HEREDOC_EOF"
+            echo "$NEW_AGENTS"
+            echo "HEREDOC_EOF"
+          } >> "$GITHUB_ENV"
+
+          {
+            echo "NEW_SKILLS<<HEREDOC_EOF"
+            echo "$NEW_SKILLS"
+            echo "HEREDOC_EOF"
+          } >> "$GITHUB_ENV"
+
+          {
+            echo "KEY_CHANGES<<HEREDOC_EOF"
+            echo "$KEY_CHANGES"
+            echo "HEREDOC_EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Stop if dry run
+        if: steps.check.outputs.has_changes == 'true' && inputs.dry_run == 'true'
+        run: |
+          echo "## Dry Run Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Upstream commits:** ${{ steps.check.outputs.upstream_commits }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Current version:** ${{ steps.check.outputs.current_version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Upstream version:** ${{ steps.check.outputs.upstream_version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Potential Conflicts" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$BOTH_CHANGED" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Key Upstream Changes" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "$KEY_CHANGES" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Attempt merge
+        if: steps.check.outputs.has_changes == 'true' && inputs.dry_run != 'true'
+        id: merge
+        run: |
+          BRANCH="sync-upstream/v${{ steps.check.outputs.upstream_version }}"
+
+          # Delete existing branch if present
+          git branch -D "$BRANCH" 2>/dev/null || true
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+
+          git checkout -b "$BRANCH"
+
+          if git merge --no-edit upstream/main 2>&1; then
+            echo "merge_clean=true" >> "$GITHUB_OUTPUT"
+            echo "Clean merge successful."
+          else
+            echo "merge_clean=false" >> "$GITHUB_OUTPUT"
+            echo "Merge has conflicts. Recording conflict details."
+
+            # List conflicted files
+            CONFLICTS=$(git diff --name-only --diff-filter=U)
+            {
+              echo "CONFLICTS<<HEREDOC_EOF"
+              echo "$CONFLICTS"
+              echo "HEREDOC_EOF"
+            } >> "$GITHUB_ENV"
+
+            # Abort merge so PR can be created with instructions
+            git merge --abort
+            # Create branch with upstream content for reference
+            git merge --no-commit upstream/main 2>/dev/null || true
+            # Accept all upstream changes as starting point
+            git checkout --theirs . 2>/dev/null || true
+            git add -A
+            git commit -m "sync: merge upstream v${{ steps.check.outputs.upstream_version }} (conflicts need resolution)" --allow-empty
+          fi
+
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Run integrity check (clean merges only)
+        if: steps.merge.outputs.merge_clean == 'true'
+        id: verify
+        run: |
+          chmod +x .claude/skills/sync-upstream/scripts/verify-auggie-integrity.sh
+          if .claude/skills/sync-upstream/scripts/verify-auggie-integrity.sh; then
+            echo "integrity=pass" >> "$GITHUB_OUTPUT"
+          else
+            echo "integrity=fail" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push branch
+        if: steps.check.outputs.has_changes == 'true' && inputs.dry_run != 'true'
+        run: |
+          git push -u origin "${{ steps.merge.outputs.branch }}" --force
+
+      - name: Create Pull Request
+        if: steps.check.outputs.has_changes == 'true' && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          MERGE_CLEAN="${{ steps.merge.outputs.merge_clean }}"
+          INTEGRITY="${{ steps.verify.outputs.integrity }}"
+          UPSTREAM_V="${{ steps.check.outputs.upstream_version }}"
+          CURRENT_V="${{ steps.check.outputs.current_version }}"
+          COMMIT_COUNT="${{ steps.check.outputs.upstream_commits }}"
+
+          if [ "$MERGE_CLEAN" = "true" ] && [ "$INTEGRITY" = "pass" ]; then
+            STATUS_BADGE="Clean merge - integrity verified"
+            LABELS="sync-upstream,automated"
+          elif [ "$MERGE_CLEAN" = "true" ]; then
+            STATUS_BADGE="Clean merge - INTEGRITY CHECK FAILED"
+            LABELS="sync-upstream,needs-attention"
+          else
+            STATUS_BADGE="CONFLICTS - manual resolution required"
+            LABELS="sync-upstream,has-conflicts"
+          fi
+
+          # Build PR body
+          PR_BODY=$(cat <<HEREDOC_PR_EOF
+          ## Upstream Sync: v${CURRENT_V} -> v${UPSTREAM_V}
+
+          **Status:** ${STATUS_BADGE}
+          **Upstream commits:** ${COMMIT_COUNT}
+
+          ### Key Upstream Changes
+          \`\`\`
+          ${KEY_CHANGES}
+          \`\`\`
+
+          ### Files Changed on Both Sides
+          \`\`\`
+          ${BOTH_CHANGED}
+          \`\`\`
+
+          ### New Upstream Agents
+          \`\`\`
+          ${NEW_AGENTS:-None}
+          \`\`\`
+
+          ### New Upstream Skills
+          \`\`\`
+          ${NEW_SKILLS:-None}
+          \`\`\`
+
+          ### Review Checklist
+
+          - [ ] All auggie-mcp references preserved (run \`verify-auggie-integrity.sh\`)
+          - [ ] New agents/skills evaluated for auggie-mcp integration
+          - [ ] Conflict resolution follows [rules](/.claude/skills/sync-upstream/references/conflict-resolution.md)
+          - [ ] JSON files valid (\`marketplace.json\`, \`plugin.json\`)
+          - [ ] No conflict markers remaining
+
+          HEREDOC_PR_EOF
+          )
+
+          if [ "$MERGE_CLEAN" = "false" ]; then
+            PR_BODY="${PR_BODY}
+
+          ### Conflicted Files (need manual resolution)
+          \`\`\`
+          ${CONFLICTS}
+          \`\`\`
+
+          **To resolve locally:**
+          \`\`\`bash
+          git fetch origin ${{ steps.merge.outputs.branch }}
+          git checkout ${{ steps.merge.outputs.branch }}
+          git merge upstream/main
+          # Resolve conflicts following .claude/skills/sync-upstream/references/conflict-resolution.md
+          # Then run: .claude/skills/sync-upstream/scripts/verify-auggie-integrity.sh
+          git push origin ${{ steps.merge.outputs.branch }}
+          \`\`\`
+
+          Or use the skill interactively: \`/sync-upstream\`
+          "
+          fi
+
+          # Close existing sync PRs
+          gh pr list --label "sync-upstream" --state open --json number -q '.[].number' | while read -r pr_num; do
+            gh pr close "$pr_num" --comment "Superseded by new sync PR" 2>/dev/null || true
+          done
+
+          gh pr create \
+            --title "Sync upstream v${UPSTREAM_V} (${COMMIT_COUNT} commits)" \
+            --body "$PR_BODY" \
+            --label "$LABELS" \
+            --base main \
+            --head "${{ steps.merge.outputs.branch }}"
