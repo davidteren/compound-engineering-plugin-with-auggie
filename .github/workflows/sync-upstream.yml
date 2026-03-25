@@ -31,6 +31,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Ensure labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for label in sync-upstream automated has-conflicts needs-attention; do
+            gh label create "$label" --force 2>/dev/null || true
+          done
+
       - name: Add upstream remote
         run: |
           git remote add upstream https://github.com/EveryInc/compound-engineering-plugin.git || true
@@ -262,9 +270,16 @@ jobs:
             gh pr close "$pr_num" --comment "Superseded by new sync PR" 2>/dev/null || true
           done
 
-          gh pr create \
+          PR_URL=$(gh pr create \
             --title "Sync upstream v${UPSTREAM_V} (${COMMIT_COUNT} commits)" \
             --body "$PR_BODY" \
-            --label "$LABELS" \
             --base main \
-            --head "${{ steps.merge.outputs.branch }}"
+            --head "${{ steps.merge.outputs.branch }}")
+
+          # Apply labels separately so label failures don't kill PR creation
+          PR_NUM=$(echo "$PR_URL" | grep -oE '[0-9]+$')
+          for label in $(echo "$LABELS" | tr ',' ' '); do
+            gh pr edit "$PR_NUM" --add-label "$label" 2>/dev/null || echo "Warning: could not add label '$label'"
+          done
+
+          echo "Created PR: $PR_URL"
