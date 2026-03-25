@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.48.1](https://github.com/davidteren/compound-engineering-plugin-with-auggie/compare/cli-v2.48.0...cli-v2.48.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* change sync-upstream schedule from weekly to daily ([a15cda9](https://github.com/davidteren/compound-engineering-plugin-with-auggie/commit/a15cda94e24e36160addbf69c45d41d602b57710))
+
 ## [2.48.0](https://github.com/davidteren/compound-engineering-plugin-with-auggie/compare/cli-v2.47.0...cli-v2.48.0) (2026-03-21)
 
 
