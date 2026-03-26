@@ -220,6 +220,7 @@ Use fully-qualified agent names inside Task calls.
 **Key Technical Decisions**
 - `compound-engineering:review:architecture-strategist` for design integrity, boundaries, and architectural tradeoffs
 - Add `compound-engineering:research:framework-docs-researcher` or `compound-engineering:research:best-practices-researcher` when the decision needs external grounding beyond repo evidence
+<<<<<<< HEAD
 
 **High-Level Technical Design**
 - `compound-engineering:review:architecture-strategist` for validating that the technical design accurately represents the intended approach and identifying gaps
@@ -386,6 +387,165 @@ Before writing:
 
 Update the plan file in place by default.
 
+=======
+
+**High-Level Technical Design**
+- `compound-engineering:review:architecture-strategist` for validating that the technical design accurately represents the intended approach and identifying gaps
+- `compound-engineering:research:repo-research-analyst` (Scope: `architecture, patterns`) for grounding the technical design in existing repo patterns and conventions
+- Add `compound-engineering:research:best-practices-researcher` when the technical design involves a DSL, API surface, or pattern that benefits from external validation
+
+**Implementation Units / Verification**
+- `compound-engineering:research:repo-research-analyst` (Scope: `patterns`) for concrete file targets, patterns to follow, and repo-specific sequencing clues
+- `compound-engineering:review:pattern-recognition-specialist` for consistency, duplication risks, and alignment with existing patterns
+- Add `compound-engineering:workflow:spec-flow-analyzer` when sequencing depends on user flow or handoff completeness
+
+**System-Wide Impact**
+- `compound-engineering:review:architecture-strategist` for cross-boundary effects, interface surfaces, and architectural knock-on impact
+- Add the specific specialist that matches the risk:
+  - `compound-engineering:review:performance-oracle` for scalability, latency, throughput, and resource-risk analysis
+  - `compound-engineering:review:security-sentinel` for auth, validation, exploit surfaces, and security boundary review
+  - `compound-engineering:review:data-integrity-guardian` for migrations, persistent state safety, consistency, and data lifecycle risks
+
+**Risks & Dependencies / Operational Notes**
+- Use the specialist that matches the actual risk:
+  - `compound-engineering:review:security-sentinel` for security, auth, privacy, and exploit risk
+  - `compound-engineering:review:data-integrity-guardian` for persistent data safety, constraints, and transaction boundaries
+  - `compound-engineering:review:data-migration-expert` for migration realism, backfills, and production data transformation risk
+  - `compound-engineering:review:deployment-verification-agent` for rollout checklists, rollback planning, and launch verification
+  - `compound-engineering:review:performance-oracle` for capacity, latency, and scaling concerns
+
+#### 3.2 Agent Prompt Shape
+
+For each selected section, pass:
+- The scope prefix from section 3.1 (e.g., `Scope: architecture, patterns.`) when the agent supports scoped invocation
+- A short plan summary
+- The exact section text
+- Why the section was selected, including which checklist triggers fired
+- The plan depth and risk profile
+- A specific question to answer
+
+Instruct the agent to return:
+- findings that change planning quality
+- stronger rationale, sequencing, verification, risk treatment, or references
+- no implementation code
+- no shell commands
+
+#### 3.3 Choose Research Execution Mode
+
+Use the lightest mode that will work:
+
+- **Direct mode** - Default. Use when the selected section set is small and the parent can safely read the agent outputs inline.
+- **Artifact-backed mode** - Use only when the selected research scope is large enough that inline returns would create unnecessary context pressure.
+
+Signals that justify artifact-backed mode:
+- More than 5 agents are likely to return meaningful findings
+- The selected section excerpts are long enough that repeating them in multiple agent outputs would be wasteful
+- The topic is high-risk and likely to attract bulky source-backed analysis
+- The platform has a history of parent-context instability on large parallel returns
+
+If artifact-backed mode is not clearly warranted, stay in direct mode.
+
+### Phase 4: Run Targeted Research and Review
+
+Launch the selected agents in parallel using the execution mode chosen in Step 3.3. If the current platform does not support parallel dispatch, run them sequentially instead.
+
+Prefer local repo and institutional evidence first. Use external research only when the gap cannot be closed responsibly from repo context or already-cited sources.
+
+If a selected section can be improved by reading the origin document more carefully, do that before dispatching external agents.
+
+#### 4.1 Direct Mode
+
+Have each selected agent return its findings directly to the parent.
+
+Keep the return payload focused:
+- strongest findings only
+- the evidence or sources that matter
+- the concrete planning improvement implied by the finding
+
+If a direct-mode agent starts producing bulky or repetitive output, stop and switch the remaining research to artifact-backed mode instead of letting the parent context bloat.
+
+#### 4.2 Artifact-Backed Mode
+
+Use a per-run scratch directory under `.context/compound-engineering/deepen-plan/`, for example `.context/compound-engineering/deepen-plan/<run-id>/` or `.context/compound-engineering/deepen-plan/<plan-filename-stem>/`.
+
+Use the scratch directory only for the current deepening pass.
+
+For each selected agent:
+- give it the same plan summary, section text, trigger rationale, depth, and risk profile described in Step 3.2
+- instruct it to write one compact artifact file for its assigned section or sections
+- have it return only a short completion summary to the parent
+
+Prefer a compact markdown artifact unless machine-readable structure is clearly useful. Each artifact should contain:
+- target section id and title
+- why the section was selected
+- 3-7 findings that materially improve planning quality
+- source-backed rationale, including whether the evidence came from repo context, origin context, institutional learnings, official docs, or external best practices
+- the specific plan change implied by each finding
+- any unresolved tradeoff that should remain explicit in the plan
+
+Artifact rules:
+- no implementation code
+- no shell commands
+- no checkpoint logs or self-diagnostics
+- no duplicated boilerplate across files
+- no judge or merge sub-pipeline
+
+Before synthesis:
+- quickly verify that each selected section has at least one usable artifact
+- if an artifact is missing or clearly malformed, re-run that agent or fall back to direct-mode reasoning for that section instead of building a validation pipeline
+
+If agent outputs conflict:
+- Prefer repo-grounded and origin-grounded evidence over generic advice
+- Prefer official framework documentation over secondary best-practice summaries when the conflict is about library behavior
+- If a real tradeoff remains, record it explicitly in the plan rather than pretending the conflict does not exist
+
+### Phase 5: Synthesize and Rewrite the Plan
+
+Strengthen only the selected sections. Keep the plan coherent and preserve its overall structure.
+
+If artifact-backed mode was used:
+- read the plan, origin document if present, and the selected section artifacts
+- also incorporate any findings already returned inline from direct-mode agents before a mid-run switch, so early results are not silently dropped
+- synthesize in one pass
+- do not create a separate judge, merge, or quality-review phase unless the user explicitly asks for another pass
+
+Allowed changes:
+- Clarify or strengthen decision rationale
+- Tighten requirements trace or origin fidelity
+- Reorder or split implementation units when sequencing is weak
+- Add missing pattern references, file/test paths, or verification outcomes
+- Expand system-wide impact, risks, or rollout treatment where justified
+- Reclassify open questions between `Resolved During Planning` and `Deferred to Implementation` when evidence supports the change
+- Strengthen, replace, or add a High-Level Technical Design section when the work warrants it and the current representation is weak, uses the wrong medium, or is absent where it would help. Preserve the non-prescriptive framing
+- Strengthen or add per-unit technical design fields where the unit's approach is non-obvious and the current approach notes are thin
+- Add an optional deep-plan section only when it materially improves execution quality
+- Add or update `deepened: YYYY-MM-DD` in frontmatter when the plan was substantively improved
+
+Do **not**:
+- Add implementation code — no imports, exact method signatures, or framework-specific syntax. Pseudo-code sketches and DSL grammars are allowed in both the top-level High-Level Technical Design section and per-unit technical design fields
+- Add git commands, commit choreography, or exact test command recipes
+- Add generic `Research Insights` subsections everywhere
+- Rewrite the entire plan from scratch
+- Invent new product requirements, scope changes, or success criteria without surfacing them explicitly
+
+If research reveals a product-level ambiguity that should change behavior or scope:
+- Do not silently decide it here
+- Record it under `Open Questions`
+- Recommend `ce:brainstorm` if the gap is truly product-defining
+
+### Phase 6: Final Checks and Write the File
+
+Before writing:
+- Confirm the plan is stronger in specific ways, not merely longer
+- Confirm the planning boundary is intact
+- Confirm the selected sections were actually the weakest ones
+- Confirm origin decisions were preserved when an origin document exists
+- Confirm the final plan still feels right-sized for its depth
+- If artifact-backed mode was used, confirm the scratch artifacts did not become a second hidden plan format
+
+Update the plan file in place by default.
+
+>>>>>>> upstream/main
 If the user explicitly requests a separate file, append `-deepened` before `.md`, for example:
 - `docs/plans/2026-03-15-001-feat-example-plan-deepened.md`
 

@@ -10,9 +10,94 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 | Skills | 40+ |
 | MCP Servers | 1 |
 
+## Skills
+
+### Core Workflow
+
+The primary entry points for engineering work, invoked as slash commands:
+
+| Skill | Description |
+|-------|-------------|
+| `/ce:ideate` | Discover high-impact project improvements through divergent ideation and adversarial filtering |
+| `/ce:brainstorm` | Explore requirements and approaches before planning |
+| `/ce:plan` | Transform features into structured implementation plans grounded in repo patterns |
+| `/ce:review` | Structured code review with tiered persona agents, confidence gating, and dedup pipeline |
+| `/ce:work` | Execute work items systematically |
+| `/ce:compound` | Document solved problems to compound team knowledge |
+| `/ce:compound-refresh` | Refresh stale or drifting learnings and decide whether to keep, update, replace, or archive them |
+| `/deepen-plan` | Stress-test plans and deepen weak sections with targeted research |
+
+### Git Workflow
+
+| Skill | Description |
+|-------|-------------|
+| `git-clean-gone-branches` | Clean up local branches whose remote tracking branch is gone |
+| `git-commit` | Create a git commit with a value-communicating message |
+| `git-commit-push-pr` | Commit, push, and open a PR with an adaptive, value-first description |
+| `git-worktree` | Manage Git worktrees for parallel development |
+
+### Workflow Utilities
+
+| Skill | Description |
+|-------|-------------|
+| `/changelog` | Create engaging changelogs for recent merges |
+| `/feature-video` | Record video walkthroughs and add to PR description |
+| `/reproduce-bug` | Reproduce bugs using logs and console |
+| `/report-bug-ce` | Report a bug in the compound-engineering plugin |
+| `/resolve-pr-feedback` | Resolve PR review feedback in parallel |
+| `/sync` | Sync Claude Code config across machines |
+| `/test-browser` | Run browser tests on PR-affected pages |
+| `/test-xcode` | Build and test iOS apps on simulator |
+| `/onboarding` | Generate `ONBOARDING.md` to help new contributors understand the codebase |
+| `/todo-resolve` | Resolve todos in parallel |
+| `/todo-triage` | Triage and prioritize pending todos |
+
+### Development Frameworks
+
+| Skill | Description |
+|-------|-------------|
+| `agent-native-architecture` | Build AI agents using prompt-native architecture |
+| `andrew-kane-gem-writer` | Write Ruby gems following Andrew Kane's patterns |
+| `dhh-rails-style` | Write Ruby/Rails code in DHH's 37signals style |
+| `dspy-ruby` | Build type-safe LLM applications with DSPy.rb |
+| `frontend-design` | Create production-grade frontend interfaces |
+
+### Review & Quality
+
+| Skill | Description |
+|-------|-------------|
+| `claude-permissions-optimizer` | Optimize Claude Code permissions from session history |
+| `document-review` | Review documents using parallel persona agents for role-specific feedback |
+| `setup` | Reserved for future project-level workflow configuration; code review agent selection is automatic |
+
+### Content & Collaboration
+
+| Skill | Description |
+|-------|-------------|
+| `compound-docs` | Capture solved problems as categorized documentation |
+| `every-style-editor` | Review copy for Every's style guide compliance |
+| `proof` | Create, edit, and share documents via Proof collaborative editor |
+| `todo-create` | File-based todo tracking system |
+
+### Automation & Tools
+
+| Skill | Description |
+|-------|-------------|
+| `agent-browser` | CLI-based browser automation using Vercel's agent-browser |
+| `gemini-imagegen` | Generate and edit images using Google's Gemini API |
+| `orchestrating-swarms` | Comprehensive guide to multi-agent swarm orchestration |
+| `rclone` | Upload files to S3, Cloudflare R2, Backblaze B2, and cloud storage |
+
+### Beta / Experimental
+
+| Skill | Description |
+|-------|-------------|
+| `/lfg` | Full autonomous engineering workflow |
+| `/slfg` | Full autonomous workflow with swarm mode for parallel execution |
+
 ## Agents
 
-Agents are organized into categories for easier discovery.
+Agents are specialized subagents invoked by skills — you typically don't call these directly.
 
 ### Review
 
@@ -87,6 +172,7 @@ Agents are organized into categories for easier discovery.
 |-------|-------------|
 | `ankane-readme-writer` | Create READMEs following Ankane-style template for Ruby gems |
 
+<<<<<<< HEAD
 ## Commands
 
 ### Workflow Commands
@@ -188,6 +274,8 @@ Core workflow commands use `ce:` prefix to unambiguously identify them as compou
 - `GEMINI_API_KEY` environment variable
 - Python packages: `google-genai`, `pillow`
 
+=======
+>>>>>>> upstream/main
 ## MCP Servers
 
 | Server | Description |

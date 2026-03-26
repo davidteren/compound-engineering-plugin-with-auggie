@@ -136,6 +136,7 @@ If depth is unclear, ask one targeted question and then continue.
 
 ### Phase 1: Gather Context
 
+<<<<<<< HEAD
 #### 1.0 Codebase Context (Runs First)
 
 Use `mcp__auggie-mcp__codebase-retrieval` (if available) to understand the codebase areas relevant to this feature:
@@ -145,6 +146,10 @@ Use `mcp__auggie-mcp__codebase-retrieval` (if available) to understand the codeb
 
 #### 1.1 Local Research (Always Runs)
 
+=======
+#### 1.1 Local Research (Always Runs)
+
+>>>>>>> upstream/main
 Prepare a concise planning context summary (a paragraph or two) to pass as input to the research agents:
 - If an origin document exists, summarize the problem frame, requirements, and key decisions from that document
 - Otherwise use the feature description directly
