@@ -1,6 +1,10 @@
 {
   "name": "@every-env/compound-plugin",
+<<<<<<< HEAD
   "version": "2.51.0",
+=======
+  "version": "2.55.0",
+>>>>>>> upstream/main
   "type": "module",
   "private": false,
   "bin": {

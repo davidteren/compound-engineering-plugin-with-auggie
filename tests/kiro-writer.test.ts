@@ -126,7 +126,11 @@ Run these research agents:
     await writeKiroBundle(tempRoot, bundle)
 
     const installedSkill = await fs.readFile(
+<<<<<<< HEAD
       path.join(tempRoot, ".kiro", "skills", "ce:plan", "SKILL.md"),
+=======
+      path.join(tempRoot, ".kiro", "skills", "ce-plan", "SKILL.md"),
+>>>>>>> upstream/main
       "utf8",
     )
 
