@@ -1,6 +1,10 @@
 import { readFile } from "fs/promises"
 import path from "path"
 import { describe, expect, test } from "bun:test"
+<<<<<<< HEAD
+=======
+import { parseFrontmatter } from "../src/utils/frontmatter"
+>>>>>>> upstream/main
 
 async function readRepoFile(relativePath: string): Promise<string> {
   return readFile(path.join(process.cwd(), relativePath), "utf8")
@@ -91,6 +95,81 @@ describe("ce-review contract", () => {
     expect(resolveTodos).toContain("safe_auto")
   })
 
+<<<<<<< HEAD
+=======
+  test("documents stack-specific conditional reviewers for the JSON pipeline", async () => {
+    const content = await readRepoFile("plugins/compound-engineering/skills/ce-review/SKILL.md")
+    const catalog = await readRepoFile(
+      "plugins/compound-engineering/skills/ce-review/references/persona-catalog.md",
+    )
+
+    for (const agent of [
+      "compound-engineering:review:dhh-rails-reviewer",
+      "compound-engineering:review:kieran-rails-reviewer",
+      "compound-engineering:review:kieran-python-reviewer",
+      "compound-engineering:review:kieran-typescript-reviewer",
+      "compound-engineering:review:julik-frontend-races-reviewer",
+    ]) {
+      expect(content).toContain(agent)
+      expect(catalog).toContain(agent)
+    }
+
+    expect(content).toContain("## Language-Aware Conditionals")
+    expect(content).not.toContain("## Language-Agnostic")
+  })
+
+  test("stack-specific reviewer agents follow the structured findings contract", async () => {
+    const reviewers = [
+      {
+        path: "plugins/compound-engineering/agents/review/dhh-rails-reviewer.md",
+        reviewer: "dhh-rails",
+      },
+      {
+        path: "plugins/compound-engineering/agents/review/kieran-rails-reviewer.md",
+        reviewer: "kieran-rails",
+      },
+      {
+        path: "plugins/compound-engineering/agents/review/kieran-python-reviewer.md",
+        reviewer: "kieran-python",
+      },
+      {
+        path: "plugins/compound-engineering/agents/review/kieran-typescript-reviewer.md",
+        reviewer: "kieran-typescript",
+      },
+      {
+        path: "plugins/compound-engineering/agents/review/julik-frontend-races-reviewer.md",
+        reviewer: "julik-frontend-races",
+      },
+    ]
+
+    for (const reviewer of reviewers) {
+      const content = await readRepoFile(reviewer.path)
+      const parsed = parseFrontmatter(content)
+      const tools = String(parsed.data.tools ?? "")
+
+      expect(String(parsed.data.description)).toContain("Conditional code-review persona")
+      expect(tools).toContain("Read")
+      expect(tools).toContain("Grep")
+      expect(tools).toContain("Glob")
+      expect(tools).toContain("Bash")
+      expect(content).toContain("## Confidence calibration")
+      expect(content).toContain("## What you don't flag")
+      expect(content).toContain("Return your findings as JSON matching the findings schema. No prose outside the JSON.")
+      expect(content).toContain(`"reviewer": "${reviewer.reviewer}"`)
+    }
+  })
+
+  test("leaves data-migration-expert as the unstructured review format", async () => {
+    const content = await readRepoFile(
+      "plugins/compound-engineering/agents/review/data-migration-expert.md",
+    )
+
+    expect(content).toContain("## Reviewer Checklist")
+    expect(content).toContain("Refuse approval until there is a written verification + rollback plan.")
+    expect(content).not.toContain("Return your findings as JSON matching the findings schema.")
+  })
+
+>>>>>>> upstream/main
   test("fails closed when merge-base is unresolved instead of falling back to git diff HEAD", async () => {
     const content = await readRepoFile("plugins/compound-engineering/skills/ce-review/SKILL.md")
 
@@ -100,9 +179,27 @@ describe("ce-review contract", () => {
     expect(content).not.toContain("git diff -U10 HEAD")
     expect(content).not.toContain("git diff --cached")
 
+<<<<<<< HEAD
     // All three scope paths must emit ERROR when BASE is unresolved
     const errorMatches = content.match(/echo "ERROR: Unable to resolve/g)
     expect(errorMatches?.length).toBe(3) // PR mode, branch mode, standalone mode
+=======
+    // PR mode still has an inline error for unresolved base
+    expect(content).toContain('echo "ERROR: Unable to resolve PR base branch')
+
+    // Branch and standalone modes delegate to resolve-base.sh and check its ERROR: output.
+    // The script itself emits ERROR: when the base is unresolved.
+    expect(content).toContain("references/resolve-base.sh")
+    const resolveScript = await readRepoFile(
+      "plugins/compound-engineering/skills/ce-review/references/resolve-base.sh",
+    )
+    expect(resolveScript).toContain("ERROR:")
+
+    // Branch and standalone modes must stop on script error, not fall back
+    expect(content).toContain(
+      "If the script outputs an error, stop instead of falling back to `git diff HEAD`",
+    )
+>>>>>>> upstream/main
   })
 
   test("orchestration callers pass explicit mode flags", async () => {

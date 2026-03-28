@@ -19,6 +19,10 @@
           "severity",
           "section",
           "why_it_matters",
+<<<<<<< HEAD
+=======
+          "finding_type",
+>>>>>>> upstream/main
           "autofix_class",
           "confidence",
           "evidence"
@@ -44,8 +48,18 @@
           },
           "autofix_class": {
             "type": "string",
+<<<<<<< HEAD
             "enum": ["auto", "present"],
             "description": "How this issue should be handled. auto = local deterministic fix the orchestrator can apply without asking (terminology, formatting, cross-references). present = requires user judgment."
+=======
+            "enum": ["auto", "batch_confirm", "present"],
+            "description": "How this issue should be handled. auto = local deterministic fix applied silently (terminology, formatting, cross-references, completeness corrections). batch_confirm = obvious fix with a clear correct answer, but touches meaning enough to warrant grouped approval. present = requires individual user judgment."
+          },
+          "finding_type": {
+            "type": "string",
+            "enum": ["error", "omission"],
+            "description": "Whether the finding is a mistake in what the document says (error) or something the document forgot to say (omission). Errors are design tensions, contradictions, or incorrect statements. Omissions are missing mechanical steps, forgotten list entries, or absent details."
+>>>>>>> upstream/main
           },
           "suggested_fix": {
             "type": ["string", "null"],
@@ -91,8 +105,19 @@
       "P3": "Minor improvement. User's discretion."
     },
     "autofix_classes": {
+<<<<<<< HEAD
       "auto": "Local, deterministic document fix: terminology consistency, formatting, cross-reference correction. Must be unambiguous and not change the document's meaning.",
       "present": "Requires user judgment -- strategic questions, tradeoffs, meaning-changing fixes, or informational findings."
+=======
+      "_principle": "Autofix class is independent of severity. A P1 finding can be auto if the fix is deterministic. The test: can the correct fix be derived from the document's own content without judgment?",
+      "auto": "Fix is derivable from the document itself -- one part is clearly authoritative over another, reconcile toward the authority. Includes: summary/detail mismatches, wrong counts, missing list entries, stale cross-references, terminology drift, prose/diagram contradictions where prose is authoritative. Must include suggested_fix.",
+      "batch_confirm": "One clear correct answer, but authors new content where exact wording needs verification. Grouped for single approval. Examples: adding a missing step mechanically implied by other content, defining an implied-but-unstated threshold. Must include suggested_fix.",
+      "present": "Requires individual user judgment -- strategic questions, design tradeoffs, or findings where reasonable people could disagree on the right action."
+    },
+    "finding_types": {
+      "error": "Something the document says that is wrong -- contradictions, incorrect statements, design tensions, incoherent tradeoffs. These are mistakes in what exists.",
+      "omission": "Something the document forgot to say -- missing mechanical steps, absent list entries, undefined thresholds, forgotten cross-references. These are gaps in completeness."
+>>>>>>> upstream/main
     }
   }
 }
