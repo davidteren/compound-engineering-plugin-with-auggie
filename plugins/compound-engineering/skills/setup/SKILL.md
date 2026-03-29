@@ -1,19 +1,28 @@
 ---
 name: setup
-description: Configure which review agents run for your project. Auto-detects stack and writes compound-engineering.local.md.
+description: Configure project-level settings for compound-engineering workflows. Currently a placeholder — review agent selection is handled automatically by ce:review.
 disable-model-invocation: true
 ---
 
 # Compound Engineering Setup
 
-## Interaction Method
+Project-level configuration for compound-engineering workflows.
 
+<<<<<<< HEAD
 Ask the user each question below using the platform's blocking question tool (e.g., `AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini). If no structured question tool is available, present each question as a numbered list and wait for a reply before proceeding. For multiSelect questions, accept comma-separated numbers (e.g. `1, 3`). Never skip or auto-configure.
 
 Interactive setup for `compound-engineering.local.md` — configures which agents run during `ce:review` and `ce:work`.
+=======
+## Current State
 
-## Step 1: Check Existing Config
+Review agent selection is handled automatically by the `ce:review` skill, which uses intelligent tiered selection based on diff content. No per-project configuration is needed for code reviews.
 
+If this skill is invoked, inform the user:
+>>>>>>> upstream/main
+
+> Review agent configuration is no longer needed — `ce:review` automatically selects the right reviewers based on your diff. Project-specific review context (e.g., "we serve 10k req/s" or "watch for N+1 queries") belongs in your project's CLAUDE.md or AGENTS.md, where all agents already read it.
+
+<<<<<<< HEAD
 Read `compound-engineering.local.md` in the project root. If it exists, display current settings and ask:
 
 ```
@@ -148,3 +157,8 @@ Agents:       {count} configured
 Tip: Edit the "Review Context" section to add project-specific instructions.
      Re-run this setup anytime to reconfigure.
 ```
+=======
+## Future Use
+
+This skill is reserved for future project-level configuration needs beyond review agent selection.
+>>>>>>> upstream/main

@@ -52,7 +52,11 @@ Check if curated knowledge already exists in skills:
    - Frontend/Design → `frontend-design`, `swiss-design`
    - TypeScript/React → `react-best-practices`
    - AI/Agents → `agent-native-architecture`
+<<<<<<< HEAD
    - Documentation → `compound-docs`, `every-style-editor`
+=======
+  - Documentation → `ce:compound`, `every-style-editor`
+>>>>>>> upstream/main
    - File operations → `rclone`, `git-worktree`
    - Image generation → `gemini-imagegen`
 

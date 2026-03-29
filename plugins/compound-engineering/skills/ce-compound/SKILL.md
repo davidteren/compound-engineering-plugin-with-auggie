@@ -21,6 +21,16 @@ Captures problem solutions while context is fresh, creating structured documenta
 /ce:compound [brief context]    # Provide additional context hint
 ```
 
+## Support Files
+
+These files are the durable contract for the workflow. Read them on-demand at the step that needs them — do not bulk-load at skill start.
+
+- `references/schema.yaml` — canonical frontmatter fields and enum values (read when validating YAML)
+- `references/yaml-schema.md` — category mapping from problem_type to directory (read when classifying)
+- `assets/resolution-template.md` — section structure for new docs (read when assembling)
+
+When spawning subagents, pass the relevant file contents into the task prompt so they have the contract without needing cross-skill paths.
+
 ## Execution Strategy
 
 **Always run full mode by default.** Proceed directly to Phase 1 unless the user explicitly requests compact-safe mode (e.g., `/ce:compound --compact` or "use compact mode").
@@ -68,6 +78,7 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
    - Extracts conversation history
    - Identifies problem type, component, symptoms
    - Incorporates auto memory excerpts (if provided by the orchestrator) as supplementary evidence when identifying problem type, component, and symptoms
+<<<<<<< HEAD
    - Validates all enum fields against the schema values below
    - Maps problem_type to the `docs/solutions/` category directory
    - Suggests a filename using the pattern `[sanitized-problem-slug]-[date].md`
@@ -98,6 +109,13 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
    | workflow_issue | workflow-issues/ |
    | best_practice | best-practices/ |
    | documentation_gap | documentation-gaps/ |
+=======
+   - Reads `references/schema.yaml` for enum validation
+   - Reads `references/yaml-schema.md` for category mapping into `docs/solutions/`
+   - Suggests a filename using the pattern `[sanitized-problem-slug]-[date].md`
+   - Returns: YAML frontmatter skeleton (must include `category:` field mapped from problem_type), category directory path, and suggested filename
+   - Does not invent enum values, categories, or frontmatter fields from memory; reads the schema and mapping files above
+>>>>>>> upstream/main
 
 #### 2. **Solution Extractor**
    - Analyzes all investigation steps
@@ -169,10 +187,19 @@ The orchestrating agent (main conversation) performs these steps:
 
    When updating an existing doc, preserve its file path and frontmatter structure. Update the solution, code examples, prevention tips, and any stale references. Add a `last_updated: YYYY-MM-DD` field to the frontmatter. Do not change the title unless the problem framing has materially shifted.
 
+<<<<<<< HEAD
 3. Assemble complete markdown file from the collected pieces
 4. Validate YAML frontmatter against schema
 5. Create directory if needed: `mkdir -p docs/solutions/[category]/`
 6. Write the file: either the updated existing doc or the new `docs/solutions/[category]/[filename].md`
+=======
+3. Assemble complete markdown file from the collected pieces, reading `assets/resolution-template.md` for the section structure of new docs
+4. Validate YAML frontmatter against `references/schema.yaml`
+5. Create directory if needed: `mkdir -p docs/solutions/[category]/`
+6. Write the file: either the updated existing doc or the new `docs/solutions/[category]/[filename].md`
+
+When creating a new doc, preserve the section order from `assets/resolution-template.md` unless the user explicitly asks for a different structure.
+>>>>>>> upstream/main
 
 </sequential_tasks>
 
@@ -253,8 +280,8 @@ When context budget is tight, this mode skips parallel subagents entirely. The o
 The orchestrator (main conversation) performs ALL of the following in one sequential pass:
 
 1. **Extract from conversation**: Identify the problem, root cause, and solution from conversation history. Also read MEMORY.md from the auto memory directory if it exists -- use any relevant notes as supplementary context alongside conversation history. Tag any memory-sourced content incorporated into the final doc with "(auto memory [claude])"
-2. **Classify**: Determine category and filename (same categories as full mode)
-3. **Write minimal doc**: Create `docs/solutions/[category]/[filename].md` with:
+2. **Classify**: Read `references/schema.yaml` and `references/yaml-schema.md`, then determine category and filename from them
+3. **Write minimal doc**: Create `docs/solutions/[category]/[filename].md` using `assets/resolution-template.md` as the base structure, with:
    - YAML frontmatter (title, category, date, tags)
    - Problem description (1-2 sentences)
    - Root cause (1-2 sentences)
@@ -400,9 +427,9 @@ Build → Test → Find Issue → Research → Improve → Document → Validate
 
 <manual_override> Use /ce:compound [context] to document immediately without waiting for auto-detection. </manual_override> </auto_invoke>
 
-## Routes To
+## Output
 
-`compound-docs` skill
+Writes the final learning directly into `docs/solutions/`.
 
 ## Applicable Specialized Agents
 
@@ -427,7 +454,6 @@ Based on problem type, these agents can enhance documentation:
 ### When to Invoke
 - **Auto-triggered** (optional): Agents can run post-documentation for enhancement
 - **Manual trigger**: User can invoke agents after /ce:compound completes for deeper review
-- **Customize agents**: Edit `compound-engineering.local.md` or invoke the `setup` skill to configure which review agents are used across all workflows
 
 ## Related Commands
 
