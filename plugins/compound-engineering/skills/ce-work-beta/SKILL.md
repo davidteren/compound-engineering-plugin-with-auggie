@@ -1,5 +1,6 @@
 ---
 name: ce:work-beta
+<<<<<<< HEAD
 description: "[BETA] Execute work plans with external delegate support. Same as ce:work but includes experimental Codex delegation mode for token-conserving code implementation."
 argument-hint: "[plan file, specification, or todo file path]"
 disable-model-invocation: true
@@ -12,6 +13,20 @@ Execute a work plan efficiently while maintaining quality and finishing features
 ## Introduction
 
 This command takes a work document (plan, specification, or todo file) and executes it systematically. The focus is on **shipping complete features** by understanding requirements quickly, following existing patterns, and maintaining quality throughout.
+=======
+description: "[BETA] Execute work with external delegate support. Same as ce:work but includes experimental Codex delegation mode for token-conserving code implementation."
+disable-model-invocation: true
+argument-hint: "[Plan doc path or description of work. Blank to auto use latest plan doc]"
+---
+
+# Work Execution Command
+
+Execute work efficiently while maintaining quality and finishing features.
+
+## Introduction
+
+This command takes a work document (plan, specification, or todo file) or a bare prompt describing the work, and executes it systematically. The focus is on **shipping complete features** by understanding requirements quickly, following existing patterns, and maintaining quality throughout.
+>>>>>>> upstream/main
 
 ## Input Document
 
@@ -19,9 +34,39 @@ This command takes a work document (plan, specification, or todo file) and execu
 
 ## Execution Workflow
 
+<<<<<<< HEAD
 ### Phase 1: Quick Start
 
 1. **Read Plan and Clarify**
+=======
+### Phase 0: Input Triage
+
+Determine how to proceed based on what was provided in `<input_document>`.
+
+**Plan document** (input is a file path to an existing plan, specification, or todo file) → skip to Phase 1.
+
+**Bare prompt** (input is a description of work, not a file path):
+
+1. **Scan the work area**
+
+   - Identify files likely to change based on the prompt
+   - Find existing test files for those areas (search for test/spec files that import, reference, or share names with the implementation files)
+   - Note local patterns and conventions in the affected areas
+
+2. **Assess complexity and route**
+
+   | Complexity | Signals | Action |
+   |-----------|---------|--------|
+   | **Trivial** | 1-2 files, no behavioral change (typo, config, rename) | Proceed to Phase 1 step 2 (environment setup), then implement directly — no task list, no execution loop. Apply Test Discovery if the change touches behavior-bearing code |
+   | **Small / Medium** | Clear scope, under ~10 files | Build a task list from discovery. Proceed to Phase 1 step 2 |
+   | **Large** | Cross-cutting, architectural decisions, 10+ files, touches auth/payments/migrations | Inform the user this would benefit from `/ce:brainstorm` or `/ce:plan` to surface edge cases and scope boundaries. Honor their choice. If proceeding, build a task list and continue to Phase 1 step 2 |
+
+---
+
+### Phase 1: Quick Start
+
+1. **Read Plan and Clarify** _(skip if arriving from Phase 0 with a bare prompt)_
+>>>>>>> upstream/main
 
    - Read the work document completely
    - Treat the plan as a decision artifact, not an execution script
@@ -50,8 +95,22 @@ This command takes a work document (plan, specification, or todo file) and execu
    ```
 
    **If already on a feature branch** (not the default branch):
+<<<<<<< HEAD
    - Ask: "Continue working on `[current_branch]`, or create a new branch?"
    - If continuing, proceed to step 3
+=======
+
+   First, check whether the branch name is **meaningful** — a name like `feat/crowd-sniff` or `fix/email-validation` tells future readers what the work is about. Auto-generated worktree names (e.g., `worktree-jolly-beaming-raven`) or other opaque names do not.
+
+   If the branch name is meaningless or auto-generated, suggest renaming it before continuing:
+   ```bash
+   git branch -m <meaningful-name>
+   ```
+   Derive the new name from the plan title or work description (e.g., `feat/crowd-sniff`). Present the rename as a recommended option alongside continuing as-is.
+
+   Then ask: "Continue working on `[current_branch]`, or create a new branch?"
+   - If continuing (with or without rename), proceed to step 3
+>>>>>>> upstream/main
    - If creating new, follow Option A or B below
 
    **If on the default branch**, choose how to proceed:
@@ -79,7 +138,11 @@ This command takes a work document (plan, specification, or todo file) and execu
    - You want to keep the default branch clean while experimenting
    - You plan to switch between branches frequently
 
+<<<<<<< HEAD
 3. **Create Todo List**
+=======
+3. **Create Todo List** _(skip if Phase 0 already built one, or if Phase 0 routed as Trivial)_
+>>>>>>> upstream/main
    - Use your available task tracking tool (e.g., TodoWrite, task lists) to break the plan into actionable tasks
    - Derive tasks from the plan's implementation units, dependencies, files, test targets, and verification criteria
    - Carry each unit's `Execution note` into the task when present
@@ -97,14 +160,24 @@ This command takes a work document (plan, specification, or todo file) and execu
 
    | Strategy | When to use |
    |----------|-------------|
+<<<<<<< HEAD
    | **Inline** | 1-2 small tasks, or tasks needing user interaction mid-flight |
    | **Serial subagents** | 3+ tasks with dependencies between them. Each subagent gets a fresh context window focused on one unit — prevents context degradation across many tasks |
    | **Parallel subagents** | 3+ tasks where some units have no shared dependencies and touch non-overlapping files. Dispatch independent units simultaneously, run dependent units after their prerequisites complete |
+=======
+   | **Inline** | 1-2 small tasks, or tasks needing user interaction mid-flight. **Default for bare-prompt work** — bare prompts rarely produce enough structured context to justify subagent dispatch |
+   | **Serial subagents** | 3+ tasks with dependencies between them. Each subagent gets a fresh context window focused on one unit — prevents context degradation across many tasks. Requires plan-unit metadata (Goal, Files, Approach, Test scenarios) |
+   | **Parallel subagents** | 3+ tasks where some units have no shared dependencies and touch non-overlapping files. Dispatch independent units simultaneously, run dependent units after their prerequisites complete. Requires plan-unit metadata |
+>>>>>>> upstream/main
 
    **Subagent dispatch** uses your available subagent or task spawning mechanism. For each unit, give the subagent:
    - The full plan file path (for overall context)
    - The specific unit's Goal, Files, Approach, Execution note, Patterns, Test scenarios, and Verification
    - Any resolved deferred questions relevant to that unit
+<<<<<<< HEAD
+=======
+   - Instruction to check whether the unit's test scenarios cover all applicable categories (happy paths, edge cases, error paths, integration) and supplement gaps before writing tests
+>>>>>>> upstream/main
 
    After each subagent completes, update the plan checkboxes and task list before dispatching the next dependent unit.
 
@@ -119,12 +192,23 @@ This command takes a work document (plan, specification, or todo file) and execu
    ```
    while (tasks remain):
      - Mark task as in-progress
+<<<<<<< HEAD
      - Read any referenced files from the plan
      - Look for similar patterns in codebase
      - Implement following existing conventions
      - Write tests for new functionality
      - Run System-Wide Test Check (see below)
      - Run tests after changes
+=======
+     - Read any referenced files from the plan or discovered during Phase 0
+     - Look for similar patterns in codebase
+     - Find existing test files for implementation files being changed (Test Discovery — see below)
+     - Implement following existing conventions
+     - Add, update, or remove tests to match implementation changes (see Test Discovery below)
+     - Run System-Wide Test Check (see below)
+     - Run tests after changes
+     - Assess testing coverage: did this task change behavior? If yes, were tests written or updated? If no tests were added, is the justification deliberate (e.g., pure config, no behavioral change)?
+>>>>>>> upstream/main
      - Mark task as completed
      - Evaluate for incremental commit (see below)
    ```
@@ -137,6 +221,20 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Do not over-implement beyond the current behavior slice when working test-first
    - Skip test-first discipline for trivial renames, pure configuration, and pure styling work
 
+<<<<<<< HEAD
+=======
+   **Test Discovery** — Before implementing changes to a file, find its existing test files (search for test/spec files that import, reference, or share naming patterns with the implementation file). When a plan specifies test scenarios or test files, start there, then check for additional test coverage the plan may not have enumerated. Changes to implementation files should be accompanied by corresponding test updates — new tests for new behavior, modified tests for changed behavior, removed or updated tests for deleted behavior.
+
+   **Test Scenario Completeness** — Before writing tests for a feature-bearing unit, check whether the plan's `Test scenarios` cover all categories that apply to this unit. If a category is missing or scenarios are vague (e.g., "validates correctly" without naming inputs and expected outcomes), supplement from the unit's own context before writing tests:
+
+   | Category | When it applies | How to derive if missing |
+   |----------|----------------|------------------------|
+   | **Happy path** | Always for feature-bearing units | Read the unit's Goal and Approach for core input/output pairs |
+   | **Edge cases** | When the unit has meaningful boundaries (inputs, state, concurrency) | Identify boundary values, empty/nil inputs, and concurrent access patterns |
+   | **Error/failure paths** | When the unit has failure modes (validation, external calls, permissions) | Enumerate invalid inputs the unit should reject, permission/auth denials it should enforce, and downstream failures it should handle |
+   | **Integration** | When the unit crosses layers (callbacks, middleware, multi-service) | Identify the cross-layer chain and write a scenario that exercises it without mocks |
+
+>>>>>>> upstream/main
    **System-Wide Test Check** — Before marking a task done, pause and ask:
 
    | Question | What to do |
@@ -196,7 +294,11 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Run relevant tests after each significant change
    - Don't wait until the end to test
    - Fix failures immediately
+<<<<<<< HEAD
    - Add new tests for new functionality
+=======
+   - Add new tests for new behavior, update tests for changed behavior, remove tests for deleted behavior
+>>>>>>> upstream/main
    - **Unit tests with mocks prove logic in isolation. Integration tests with real objects prove the layers work together.** If your change touches callbacks, middleware, or error handling — you need both.
 
 5. **Simplify as You Go**
@@ -244,6 +346,7 @@ This command takes a work document (plan, specification, or todo file) and execu
    # Use linting-agent before pushing to origin
    ```
 
+<<<<<<< HEAD
 2. **Consider Reviewer Agents** (Optional)
 
    Use for complex, risky, or large changes. Read agents from `compound-engineering.local.md` frontmatter (`review_agents`). If no settings file, invoke the `setup` skill to create one.
@@ -253,6 +356,23 @@ This command takes a work document (plan, specification, or todo file) and execu
 3. **Final Validation**
    - All tasks marked completed
    - All tests pass
+=======
+2. **Code Review** (REQUIRED)
+
+   Every change gets reviewed before shipping. The depth scales with the change's risk profile, but review itself is never skipped.
+
+   **Tier 2: Full review (default)** — REQUIRED unless Tier 1 criteria are explicitly met. Invoke the `ce:review` skill with `mode:autofix` to run specialized reviewer agents, auto-apply safe fixes, and surface residual work as todos. When the plan file path is known, pass it as `plan:<path>`. This is the mandatory default — proceed to Tier 1 only after confirming every criterion below.
+
+   **Tier 1: Inline self-review** — A lighter alternative permitted only when **all four** criteria are true. Before choosing Tier 1, explicitly state which criteria apply and why. If any criterion is uncertain, use Tier 2.
+   - Purely additive (new files only, no existing behavior modified)
+   - Single concern (one skill, one component — not cross-cutting)
+   - Pattern-following (implementation mirrors an existing example with no novel logic)
+   - Plan-faithful (no scope growth, no deferred questions resolved with surprising answers)
+
+3. **Final Validation**
+   - All tasks marked completed
+   - Testing addressed -- tests pass and new/changed behavior has corresponding test coverage (or an explicit justification for why tests are not needed)
+>>>>>>> upstream/main
    - Linting passes
    - Code follows existing patterns
    - Figma designs match (if applicable)
@@ -272,6 +392,7 @@ This command takes a work document (plan, specification, or todo file) and execu
 
 ### Phase 4: Ship It
 
+<<<<<<< HEAD
 1. **Create Commit**
 
    ```bash
@@ -310,6 +431,11 @@ This command takes a work document (plan, specification, or todo file) and execu
 2. **Capture and Upload Screenshots for UI Changes** (REQUIRED for any UI work)
 
    For **any** design changes, new views, or UI modifications, you MUST capture and upload screenshots:
+=======
+1. **Capture and Upload Screenshots for UI Changes** (REQUIRED for any UI work)
+
+   For **any** design changes, new views, or UI modifications, capture and upload screenshots before creating the PR:
+>>>>>>> upstream/main
 
    **Step 1: Start dev server** (if not running)
    ```bash
@@ -337,6 +463,7 @@ This command takes a work document (plan, specification, or todo file) and execu
    - **Modified screens**: Before AND after screenshots
    - **Design implementation**: Screenshot showing Figma design match
 
+<<<<<<< HEAD
    **IMPORTANT**: Always include uploaded image URLs in PR description. This provides visual context for reviewers and documents the change.
 
 3. **Create Pull Request**
@@ -387,15 +514,37 @@ This command takes a work document (plan, specification, or todo file) and execu
    ```
 
 4. **Update Plan Status**
+=======
+2. **Commit and Create Pull Request**
+
+   Load the `git-commit-push-pr` skill to handle committing, pushing, and PR creation. The skill handles convention detection, branch safety, logical commit splitting, adaptive PR descriptions, and attribution badges.
+
+   When providing context for the PR description, include:
+   - The plan's summary and key decisions
+   - Testing notes (tests added/modified, manual testing performed)
+   - Screenshot URLs from step 1 (if applicable)
+   - Figma design link (if applicable)
+   - The Post-Deploy Monitoring & Validation section (see Phase 3 Step 4)
+
+   If the user prefers to commit without creating a PR, load the `git-commit` skill instead.
+
+3. **Update Plan Status**
+>>>>>>> upstream/main
 
    If the input document has YAML frontmatter with a `status` field, update it to `completed`:
    ```
    status: active  →  status: completed
    ```
 
+<<<<<<< HEAD
 5. **Notify User**
    - Summarize what was completed
    - Link to PR
+=======
+4. **Notify User**
+   - Summarize what was completed
+   - Link to PR (if one was created)
+>>>>>>> upstream/main
    - Note any follow-up work needed
    - Suggest next steps if applicable
 
@@ -470,7 +619,11 @@ When external delegation is active, follow this workflow for each tagged task. D
 
    Verify the delegate CLI is installed. If not found, print "Delegate CLI not installed - continuing with standard mode." and proceed normally.
 
+<<<<<<< HEAD
 2. **Build prompt** — For each task, assemble a prompt from the plan's implementation unit (Goal, Files, Approach, Conventions from `compound-engineering.local.md`). Include rules: no git commits, no PRs, run `git status` and `git diff --stat` when done. Never embed credentials or tokens in the prompt - pass auth through environment variables.
+=======
+2. **Build prompt** — For each task, assemble a prompt from the plan's implementation unit (Goal, Files, Approach, Conventions from project CLAUDE.md/AGENTS.md). Include rules: no git commits, no PRs, run `git status` and `git diff --stat` when done. Never embed credentials or tokens in the prompt - pass auth through environment variables.
+>>>>>>> upstream/main
 
 3. **Write prompt to file** — Save the assembled prompt to a unique temporary file to avoid shell quoting issues and cross-task races. Use a unique filename per task.
 
@@ -517,7 +670,11 @@ When some tasks are executed by the delegate and others by the current agent, us
 - Follow existing patterns
 - Write tests for new code
 - Run linting before pushing
+<<<<<<< HEAD
 - Use reviewer agents for complex/risky changes only
+=======
+- Review every change — inline for simple additive work, full review for everything else
+>>>>>>> upstream/main
 
 ### Ship Complete Features
 
@@ -531,13 +688,18 @@ Before creating PR, verify:
 
 - [ ] All clarifying questions asked and answered
 - [ ] All tasks marked completed
+<<<<<<< HEAD
 - [ ] Tests pass (run project's test command)
+=======
+- [ ] Testing addressed -- tests pass AND new/changed behavior has corresponding test coverage (or an explicit justification for why tests are not needed)
+>>>>>>> upstream/main
 - [ ] Linting passes (use linting-agent)
 - [ ] Code follows existing patterns
 - [ ] Figma designs match implementation (if applicable)
 - [ ] Before/after screenshots captured and uploaded (for UI changes)
 - [ ] Commit messages follow conventional format
 - [ ] PR description includes Post-Deploy Monitoring & Validation section (or explicit no-impact rationale)
+<<<<<<< HEAD
 - [ ] PR description includes summary, testing notes, and screenshots
 - [ ] PR description includes Compound Engineered badge with accurate model, harness, and version
 
@@ -552,6 +714,23 @@ Before creating PR, verify:
 - User explicitly requests thorough review
 
 For most features: tests + linting + following patterns is sufficient.
+=======
+- [ ] Code review completed (inline self-review or full `ce:review`)
+- [ ] PR description includes summary, testing notes, and screenshots
+- [ ] PR description includes Compound Engineered badge with accurate model, harness, and version
+
+## Code Review Tiers
+
+Every change gets reviewed. The tier determines depth, not whether review happens.
+
+**Tier 2 (full review)** — REQUIRED default. Invoke `ce:review mode:autofix` with `plan:<path>` when available. Safe fixes are applied automatically; residual work surfaces as todos. Always use this tier unless all four Tier 1 criteria are explicitly confirmed.
+
+**Tier 1 (inline self-review)** — permitted only when all four are true (state each explicitly before choosing):
+- Purely additive (new files only, no existing behavior modified)
+- Single concern (one skill, one component — not cross-cutting)
+- Pattern-following (mirrors an existing example, no novel logic)
+- Plan-faithful (no scope growth, no surprising deferred-question resolutions)
+>>>>>>> upstream/main
 
 ## Common Pitfalls to Avoid
 
@@ -561,4 +740,8 @@ For most features: tests + linting + following patterns is sufficient.
 - **Testing at the end** - Test continuously or suffer later
 - **Forgetting to track progress** - Update task status as you go or lose track of what's done
 - **80% done syndrome** - Finish the feature, don't move on early
+<<<<<<< HEAD
 - **Over-reviewing simple changes** - Save reviewer agents for complex work
+=======
+- **Skipping review** - Every change gets reviewed; only the depth varies
+>>>>>>> upstream/main

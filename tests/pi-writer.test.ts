@@ -80,7 +80,11 @@ Run these research agents:
     await writePiBundle(outputRoot, bundle)
 
     const installedSkill = await fs.readFile(
+<<<<<<< HEAD
       path.join(outputRoot, "skills", "ce:plan", "SKILL.md"),
+=======
+      path.join(outputRoot, "skills", "ce-plan", "SKILL.md"),
+>>>>>>> upstream/main
       "utf8",
     )
 

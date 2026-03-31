@@ -1,4 +1,6 @@
 import { formatFrontmatter } from "../utils/frontmatter"
+import { normalizeModelWithProvider } from "../utils/model"
+import { sanitizePathName } from "../utils/files"
 import type {
   ClaudeAgent,
   ClaudeCommand,
@@ -33,9 +35,9 @@ export function convertClaudeToOpenClaw(
   }))
 
   const allSkillDirs = [
-    ...agentSkills.map((s) => s.dir),
-    ...commandSkills.map((s) => s.dir),
-    ...plugin.skills.map((s) => s.name),
+    ...agentSkills.map((s) => sanitizePathName(s.dir)),
+    ...commandSkills.map((s) => sanitizePathName(s.dir)),
+    ...plugin.skills.map((s) => sanitizePathName(s.name)),
   ]
 
   const manifest = buildManifest(plugin, allSkillDirs)
@@ -103,7 +105,7 @@ function convertAgentToSkill(agent: ClaudeAgent): OpenClawSkillFile {
   }
 
   if (agent.model && agent.model !== "inherit") {
-    frontmatter.model = agent.model
+    frontmatter.model = normalizeModelWithProvider(agent.model)
   }
 
   const body = rewritePaths(agent.body)
@@ -123,7 +125,7 @@ function convertCommandToSkill(command: ClaudeCommand): OpenClawSkillFile {
   }
 
   if (command.model && command.model !== "inherit") {
-    frontmatter.model = command.model
+    frontmatter.model = normalizeModelWithProvider(command.model)
   }
 
   const body = rewritePaths(command.body)
