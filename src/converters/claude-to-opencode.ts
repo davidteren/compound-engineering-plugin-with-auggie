@@ -1,4 +1,5 @@
 import { formatFrontmatter } from "../utils/frontmatter"
+import { normalizeModelWithProvider } from "../utils/model"
 import type {
   ClaudeAgent,
   ClaudeCommand,
@@ -93,7 +94,7 @@ function convertAgent(agent: ClaudeAgent, options: ClaudeToOpenCodeOptions) {
   }
 
   if (agent.model && agent.model !== "inherit") {
-    frontmatter.model = normalizeModel(agent.model)
+    frontmatter.model = normalizeModelWithProvider(agent.model)
   }
 
   if (options.inferTemperature) {
@@ -121,7 +122,7 @@ function convertCommands(commands: ClaudeCommand[]): OpenCodeCommandFile[] {
       description: command.description,
     }
     if (command.model && command.model !== "inherit") {
-      frontmatter.model = normalizeModel(command.model)
+      frontmatter.model = normalizeModelWithProvider(command.model)
     }
     const content = formatFrontmatter(frontmatter, rewriteClaudePaths(command.body))
     files.push({ name: command.name, content })
@@ -260,6 +261,7 @@ function rewriteClaudePaths(body: string): string {
     .replace(/\.claude\//g, ".opencode/")
 }
 
+<<<<<<< HEAD
 // Bare Claude family aliases used in Claude Code (e.g. `model: haiku`).
 // Update these when new model generations are released.
 const CLAUDE_FAMILY_ALIASES: Record<string, string> = {
@@ -284,6 +286,8 @@ function normalizeModel(model: string): string {
   return `anthropic/${model}`
 }
 
+=======
+>>>>>>> upstream/main
 function inferTemperature(agent: ClaudeAgent): number | undefined {
   const sample = `${agent.name} ${agent.description ?? ""}`.toLowerCase()
   if (/(review|audit|security|sentinel|oracle|lint|verification|guardian)/.test(sample)) {

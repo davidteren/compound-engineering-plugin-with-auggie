@@ -270,7 +270,7 @@ Structure your findings as:
 - Distinguish between official guidelines and observed patterns
 - Note the recency of documentation (check last update dates)
 - Flag any contradictions or outdated information
-- Provide specific file paths and examples to support findings
+- Provide specific file paths (repo-relative, never absolute) and examples to support findings
 
 **Tool Selection:**
 

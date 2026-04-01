@@ -1,6 +1,10 @@
 {
   "name": "compound-engineering",
+<<<<<<< HEAD
   "version": "2.51.0",
+=======
+  "version": "2.60.0",
+>>>>>>> upstream/main
   "description": "AI-powered development tools for code review, research, design, and workflow automation.",
   "author": {
     "name": "Kieran Klaassen",
