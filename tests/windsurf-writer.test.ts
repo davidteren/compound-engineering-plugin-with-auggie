@@ -112,7 +112,11 @@ Run these research agents:
     await writeWindsurfBundle(tempRoot, bundle)
 
     const installedSkill = await fs.readFile(
+<<<<<<< HEAD
       path.join(tempRoot, "skills", "ce:plan", "SKILL.md"),
+=======
+      path.join(tempRoot, "skills", "ce-plan", "SKILL.md"),
+>>>>>>> upstream/main
       "utf8",
     )
 
