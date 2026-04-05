@@ -10,6 +10,7 @@ A framework-agnostic, hypothesis-driven workflow for reproducing and investigati
 
 ## Phase 1: Understand the Issue
 
+<<<<<<< HEAD
 **Codebase Context First:** Use `mcp__auggie-mcp__codebase-retrieval` (if available) to understand the code areas related to the bug. Search for: "Find the implementation of [feature described in the issue], including error handling, validation, and related services". This helps identify where things could go wrong. If codebase-retrieval is not available, fall back to native file-search/glob and content-search/grep tools.
 
 Fetch and analyze the bug report to extract structured information before touching the codebase.
@@ -18,6 +19,14 @@ Fetch and analyze the bug report to extract structured information before touchi
 
 If no issue number or URL was provided as an argument, ask the user for one before proceeding (using the platform's question tool -- e.g., `AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini -- or present a prompt and wait for a reply).
 
+=======
+Fetch and analyze the bug report to extract structured information before touching the codebase.
+
+### Fetch the issue
+
+If no issue number or URL was provided as an argument, ask the user for one before proceeding (using the platform's question tool -- e.g., `AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini -- or present a prompt and wait for a reply).
+
+>>>>>>> upstream/main
 ```bash
 gh issue view $ARGUMENTS --json title,body,comments,labels,assignees
 ```
