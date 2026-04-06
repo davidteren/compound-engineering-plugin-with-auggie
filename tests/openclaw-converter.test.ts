@@ -67,8 +67,48 @@ describe("convertClaudeToOpenClaw", () => {
     const parsed = parseFrontmatter(skill!.content)
     expect(parsed.data.name).toBe("security-reviewer")
     expect(parsed.data.description).toBe("Security-focused agent")
-    expect(parsed.data.model).toBe("claude-sonnet-4-20250514")
+    expect(parsed.data.model).toBe("anthropic/claude-sonnet-4-20250514")
     expect(parsed.body).toContain("Focus on vulnerabilities")
+  })
+
+  test("resolves bare model aliases to provider-prefixed IDs", () => {
+    const plugin: ClaudePlugin = {
+      ...fixturePlugin,
+      agents: [
+        {
+          name: "fast-agent",
+          description: "Fast agent",
+          model: "sonnet",
+          body: "Do things quickly.",
+          sourcePath: "/tmp/plugin/agents/fast.md",
+        },
+      ],
+    }
+
+    const bundle = convertClaudeToOpenClaw(plugin, defaultOptions)
+    const skill = bundle.skills.find((s) => s.name === "fast-agent")
+    const parsed = parseFrontmatter(skill!.content)
+    expect(parsed.data.model).toBe("anthropic/claude-sonnet-4-6")
+  })
+
+  test("prefixes minimax models with minimax/ provider", () => {
+    const plugin: ClaudePlugin = {
+      ...fixturePlugin,
+      agents: [
+        {
+          name: "minimax-agent",
+          description: "MiniMax agent",
+          model: "minimax-m2.7",
+          body: "Use MiniMax model.",
+          sourcePath: "/tmp/plugin/agents/minimax.md",
+        },
+      ],
+    }
+
+    const bundle = convertClaudeToOpenClaw(plugin, defaultOptions)
+    const skill = bundle.skills.find((s) => s.name === "minimax-agent")
+    const parsed = parseFrontmatter(skill!.content)
+    expect(parsed.data.model).toBe("minimax/minimax-m2.7")
   })
 
   test("converts commands to skill files (excluding disableModelInvocation)", () => {
@@ -113,7 +153,7 @@ describe("convertClaudeToOpenClaw", () => {
       properties: {},
     })
     expect(bundle.manifest.skills).toContain("skills/agent-security-reviewer")
-    expect(bundle.manifest.skills).toContain("skills/cmd-workflows:plan")
+    expect(bundle.manifest.skills).toContain("skills/cmd-workflows-plan")
     expect(bundle.manifest.skills).toContain("skills/existing-skill")
   })
 
@@ -200,5 +240,28 @@ describe("convertClaudeToOpenClaw", () => {
     const plugin: ClaudePlugin = { ...fixturePlugin, mcpServers: undefined }
     const bundle = convertClaudeToOpenClaw(plugin, defaultOptions)
     expect(bundle.openclawConfig).toBeUndefined()
+  })
+
+  test("manifest skill paths use sanitized names matching filesystem output", () => {
+    const plugin: ClaudePlugin = {
+      ...fixturePlugin,
+      skills: [
+        {
+          name: "ce:plan",
+          description: "Planning skill",
+          sourceDir: "/tmp/plugin/skills/ce-plan",
+          skillPath: "/tmp/plugin/skills/ce-plan/SKILL.md",
+        },
+      ],
+    }
+
+    const bundle = convertClaudeToOpenClaw(plugin, defaultOptions)
+
+    // Manifest paths must not contain colons
+    for (const skillPath of bundle.manifest.skills) {
+      expect(skillPath).not.toContain(":")
+    }
+    expect(bundle.manifest.skills).toContain("skills/ce-plan")
+    expect(bundle.manifest.skills).toContain("skills/cmd-workflows-plan")
   })
 })

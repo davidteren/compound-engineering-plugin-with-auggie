@@ -19,6 +19,10 @@
           "severity",
           "section",
           "why_it_matters",
+<<<<<<< HEAD
+=======
+          "finding_type",
+>>>>>>> upstream/main
           "autofix_class",
           "confidence",
           "evidence"
@@ -45,7 +49,16 @@
           "autofix_class": {
             "type": "string",
             "enum": ["auto", "present"],
+<<<<<<< HEAD
             "description": "How this issue should be handled. auto = local deterministic fix the orchestrator can apply without asking (terminology, formatting, cross-references). present = requires user judgment."
+=======
+            "description": "How this issue should be handled. auto = one clear correct fix that can be applied silently (terminology, formatting, cross-references, completeness corrections, additions mechanically implied by other content). present = requires individual user judgment."
+          },
+          "finding_type": {
+            "type": "string",
+            "enum": ["error", "omission"],
+            "description": "Whether the finding is a mistake in what the document says (error) or something the document forgot to say (omission). Errors are design tensions, contradictions, or incorrect statements. Omissions are missing mechanical steps, forgotten list entries, or absent details."
+>>>>>>> upstream/main
           },
           "suggested_fix": {
             "type": ["string", "null"],
@@ -76,6 +89,7 @@
       "description": "Questions that should be resolved in a later workflow stage (planning, implementation)",
       "items": { "type": "string" }
     }
+<<<<<<< HEAD
   },
 
   "_meta": {
@@ -94,5 +108,7 @@
       "auto": "Local, deterministic document fix: terminology consistency, formatting, cross-reference correction. Must be unambiguous and not change the document's meaning.",
       "present": "Requires user judgment -- strategic questions, tradeoffs, meaning-changing fixes, or informational findings."
     }
+=======
+>>>>>>> upstream/main
   }
 }

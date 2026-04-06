@@ -6,13 +6,101 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 
 | Component | Count |
 |-----------|-------|
+<<<<<<< HEAD
 | Agents | 35+ |
 | Skills | 40+ |
 | MCP Servers | 1 |
+=======
+| Agents | 50+ |
+| Skills | 40+ |
+
+## Skills
+
+### Core Workflow
+
+The primary entry points for engineering work, invoked as slash commands:
+
+| Skill | Description |
+|-------|-------------|
+| `/ce:ideate` | Discover high-impact project improvements through divergent ideation and adversarial filtering |
+| `/ce:brainstorm` | Explore requirements and approaches before planning |
+| `/ce:plan` | Transform features into structured implementation plans grounded in repo patterns, with automatic confidence checking |
+| `/ce:review` | Structured code review with tiered persona agents, confidence gating, and dedup pipeline |
+| `/ce:work` | Execute work items systematically |
+| `/ce:compound` | Document solved problems to compound team knowledge |
+| `/ce:compound-refresh` | Refresh stale or drifting learnings and decide whether to keep, update, replace, or archive them |
+
+### Git Workflow
+
+| Skill | Description |
+|-------|-------------|
+| `git-clean-gone-branches` | Clean up local branches whose remote tracking branch is gone |
+| `git-commit` | Create a git commit with a value-communicating message |
+| `git-commit-push-pr` | Commit, push, and open a PR with an adaptive description; also update an existing PR description |
+| `git-worktree` | Manage Git worktrees for parallel development |
+
+### Workflow Utilities
+
+| Skill | Description |
+|-------|-------------|
+| `/changelog` | Create engaging changelogs for recent merges |
+| `/feature-video` | Record video walkthroughs and add to PR description |
+| `/reproduce-bug` | Reproduce bugs using logs and console |
+| `/report-bug-ce` | Report a bug in the compound-engineering plugin |
+| `/resolve-pr-feedback` | Resolve PR review feedback in parallel |
+| `/sync` | Sync Claude Code config across machines |
+| `/test-browser` | Run browser tests on PR-affected pages |
+| `/test-xcode` | Build and test iOS apps on simulator using XcodeBuildMCP |
+| `/onboarding` | Generate `ONBOARDING.md` to help new contributors understand the codebase |
+| `/todo-resolve` | Resolve todos in parallel |
+| `/todo-triage` | Triage and prioritize pending todos |
+
+### Development Frameworks
+
+| Skill | Description |
+|-------|-------------|
+| `agent-native-architecture` | Build AI agents using prompt-native architecture |
+| `andrew-kane-gem-writer` | Write Ruby gems following Andrew Kane's patterns |
+| `dhh-rails-style` | Write Ruby/Rails code in DHH's 37signals style |
+| `dspy-ruby` | Build type-safe LLM applications with DSPy.rb |
+| `frontend-design` | Create production-grade frontend interfaces |
+
+### Review & Quality
+
+| Skill | Description |
+|-------|-------------|
+| `claude-permissions-optimizer` | Optimize Claude Code permissions from session history |
+| `document-review` | Review documents using parallel persona agents for role-specific feedback |
+| `setup` | Reserved for future project-level workflow configuration; code review agent selection is automatic |
+
+### Content & Collaboration
+
+| Skill | Description |
+|-------|-------------|
+| `every-style-editor` | Review copy for Every's style guide compliance |
+| `proof` | Create, edit, and share documents via Proof collaborative editor |
+| `todo-create` | File-based todo tracking system |
+
+### Automation & Tools
+
+| Skill | Description |
+|-------|-------------|
+| `agent-browser` | CLI-based browser automation using Vercel's agent-browser |
+| `gemini-imagegen` | Generate and edit images using Google's Gemini API |
+| `orchestrating-swarms` | Comprehensive guide to multi-agent swarm orchestration |
+| `rclone` | Upload files to S3, Cloudflare R2, Backblaze B2, and cloud storage |
+
+### Beta / Experimental
+
+| Skill | Description |
+|-------|-------------|
+| `/lfg` | Full autonomous engineering workflow |
+| `/slfg` | Full autonomous workflow with swarm mode for parallel execution |
+>>>>>>> upstream/main
 
 ## Agents
 
-Agents are organized into categories for easier discovery.
+Agents are specialized subagents invoked by skills — you typically don't call these directly.
 
 ### Review
 
@@ -20,6 +108,11 @@ Agents are organized into categories for easier discovery.
 |-------|-------------|
 | `agent-native-reviewer` | Verify features are agent-native (action + context parity) |
 | `api-contract-reviewer` | Detect breaking API contract changes |
+<<<<<<< HEAD
+=======
+| `cli-agent-readiness-reviewer` | Evaluate CLI agent-friendliness against 7 core principles |
+| `cli-readiness-reviewer` | CLI agent-readiness persona for ce:review (conditional, structured JSON) |
+>>>>>>> upstream/main
 | `architecture-strategist` | Analyze architectural decisions and compliance |
 | `code-simplicity-reviewer` | Final pass for simplicity and minimalism |
 | `correctness-reviewer` | Logic errors, edge cases, state bugs |
@@ -41,6 +134,11 @@ Agents are organized into categories for easier discovery.
 | `security-reviewer` | Exploitable vulnerabilities with confidence calibration |
 | `security-sentinel` | Security audits and vulnerability assessments |
 | `testing-reviewer` | Test coverage gaps, weak assertions |
+<<<<<<< HEAD
+=======
+| `project-standards-reviewer` | CLAUDE.md and AGENTS.md compliance |
+| `adversarial-reviewer` | Construct failure scenarios to break implementations across component boundaries |
+>>>>>>> upstream/main
 
 ### Document Review
 
@@ -52,6 +150,10 @@ Agents are organized into categories for easier discovery.
 | `product-lens-reviewer` | Challenge problem framing, evaluate scope decisions, surface goal misalignment |
 | `scope-guardian-reviewer` | Challenge unjustified complexity, scope creep, and premature abstractions |
 | `security-lens-reviewer` | Evaluate plans for security gaps at the plan level (auth, data, APIs) |
+<<<<<<< HEAD
+=======
+| `adversarial-document-reviewer` | Challenge premises, surface unstated assumptions, and stress-test decisions |
+>>>>>>> upstream/main
 
 ### Research
 
@@ -63,6 +165,7 @@ Agents are organized into categories for easier discovery.
 | `issue-intelligence-analyst` | Analyze GitHub issues to surface recurring themes and pain patterns |
 | `learnings-researcher` | Search institutional learnings for relevant past solutions |
 | `repo-research-analyst` | Research repository structure and conventions |
+| `slack-researcher` | Search Slack for organizational context relevant to the current task |
 
 ### Design
 
@@ -87,6 +190,7 @@ Agents are organized into categories for easier discovery.
 |-------|-------------|
 | `ankane-readme-writer` | Create READMEs following Ankane-style template for Ruby gems |
 
+<<<<<<< HEAD
 ## Commands
 
 ### Workflow Commands
@@ -214,6 +318,8 @@ Many agents in this plugin are enhanced by `mcp__auggie-mcp__codebase-retrieval`
 
 To add it, configure the `auggie-mcp` MCP server in your Claude Code settings. See Augment's documentation for setup instructions.
 
+=======
+>>>>>>> upstream/main
 ## Browser Automation
 
 This plugin uses **agent-browser CLI** for browser automation tasks. Install it globally:
@@ -230,30 +336,6 @@ The `agent-browser` skill provides comprehensive documentation on usage.
 ```bash
 claude /plugin install compound-engineering
 ```
-
-## Known Issues
-
-### MCP Servers Not Auto-Loading
-
-**Issue:** The bundled Context7 MCP server may not load automatically when the plugin is installed.
-
-**Workaround:** Manually add it to your project's `.claude/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "context7": {
-      "type": "http",
-      "url": "https://mcp.context7.com/mcp",
-      "headers": {
-        "x-api-key": "${CONTEXT7_API_KEY:-}"
-      }
-    }
-  }
-}
-```
-
-Set `CONTEXT7_API_KEY` in your environment to authenticate. Or add it globally in `~/.claude/settings.json` for all projects.
 
 ## Version History
 
