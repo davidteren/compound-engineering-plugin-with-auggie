@@ -1,6 +1,10 @@
 {
   "name": "compound-engineering",
+<<<<<<< HEAD
   "version": "2.51.0",
+=======
+  "version": "2.63.0",
+>>>>>>> upstream/main
   "description": "AI-powered development tools for code review, research, design, and workflow automation.",
   "author": {
     "name": "Kieran Klaassen",
@@ -23,11 +27,5 @@
     "image-generation",
     "agent-browser",
     "browser-automation"
-  ],
-  "mcpServers": {
-    "context7": {
-      "type": "http",
-      "url": "https://mcp.context7.com/mcp"
-    }
-  }
+  ]
 }
