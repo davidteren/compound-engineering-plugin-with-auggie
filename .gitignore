@@ -5,3 +5,7 @@ node_modules/
 todos/
 .worktrees
 .context/
+<<<<<<< HEAD
+=======
+.claude/worktrees/
+>>>>>>> upstream/main

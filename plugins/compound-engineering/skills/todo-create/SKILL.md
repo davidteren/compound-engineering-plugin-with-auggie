@@ -34,7 +34,11 @@ The `.context/compound-engineering/todos/` directory is a file-based tracking sy
 
 ## File Structure
 
+<<<<<<< HEAD
 Each todo has YAML frontmatter and structured sections. Use the template at [todo-template.md](./assets/todo-template.md) when creating new todos.
+=======
+Each todo has YAML frontmatter and structured sections. Use the todo template included below when creating new todos.
+>>>>>>> upstream/main
 
 ```yaml
 ---
@@ -58,7 +62,11 @@ dependencies: ["001"]     # Issue IDs this is blocked by
 
 1. `mkdir -p .context/compound-engineering/todos/`
 2. Search both paths for `[0-9]*-*.md`, find the highest numeric prefix, increment, zero-pad to 3 digits.
+<<<<<<< HEAD
 3. Read [todo-template.md](./assets/todo-template.md), write to canonical path as `{NEXT_ID}-pending-{priority}-{description}.md`.
+=======
+3. Use the todo template included below, write to canonical path as `{NEXT_ID}-pending-{priority}-{description}.md`.
+>>>>>>> upstream/main
 4. Fill Problem Statement, Findings, Proposed Solutions, Acceptance Criteria, and initial Work Log entry.
 5. Set status: `pending` (needs triage) or `ready` (pre-approved).
 
@@ -101,3 +109,12 @@ To check blockers: search for `{dep_id}-complete-*.md` in both paths. Missing ma
 ## Key Distinction
 
 This skill manages **durable, cross-session work items** persisted as markdown files. For temporary in-session step tracking, use platform task tools (`TaskCreate`/`TaskUpdate` in Claude Code, `update_plan` in Codex) instead.
+<<<<<<< HEAD
+=======
+
+---
+
+## Todo Template
+
+@./assets/todo-template.md
+>>>>>>> upstream/main
