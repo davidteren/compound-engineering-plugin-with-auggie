@@ -1,5 +1,6 @@
 ---
 name: ce:work-beta
+<<<<<<< HEAD
 description: "[BETA] Execute work plans with external delegate support. Same as ce:work but includes experimental Codex delegation mode for token-conserving code implementation."
 argument-hint: "[plan file, specification, or todo file path]"
 disable-model-invocation: true
@@ -12,16 +13,114 @@ Execute a work plan efficiently while maintaining quality and finishing features
 ## Introduction
 
 This command takes a work document (plan, specification, or todo file) and executes it systematically. The focus is on **shipping complete features** by understanding requirements quickly, following existing patterns, and maintaining quality throughout.
+=======
+description: "[BETA] Execute work with external delegate support. Same as ce:work but includes experimental Codex delegation mode for token-conserving code implementation."
+disable-model-invocation: true
+argument-hint: "[Plan doc path or description of work. Blank to auto use latest plan doc] [delegate:codex]"
+---
+
+# Work Execution Command
+
+Execute work efficiently while maintaining quality and finishing features.
+
+## Introduction
+
+This command takes a work document (plan, specification, or todo file) or a bare prompt describing the work, and executes it systematically. The focus is on **shipping complete features** by understanding requirements quickly, following existing patterns, and maintaining quality throughout.
+
+**Beta rollout note:** Invoke `ce:work-beta` manually when you want to trial Codex delegation. During the beta period, planning and workflow handoffs remain pointed at stable `ce:work` to avoid dual-path orchestration complexity.
+>>>>>>> upstream/main
 
 ## Input Document
 
 <input_document> #$ARGUMENTS </input_document>
 
+<<<<<<< HEAD
 ## Execution Workflow
 
 ### Phase 1: Quick Start
 
 1. **Read Plan and Clarify**
+=======
+## Argument Parsing
+
+Parse `$ARGUMENTS` for the following optional tokens. Strip each recognized token before interpreting the remainder as the plan file path or bare prompt.
+
+| Token | Example | Effect |
+|-------|---------|--------|
+| `delegate:codex` | `delegate:codex` | Activate Codex delegation mode for plan execution |
+| `delegate:local` | `delegate:local` | Deactivate delegation even if enabled in config |
+
+All tokens are optional. When absent, fall back to the resolution chain below.
+
+**Fuzzy activation:** Also recognize imperative delegation-intent phrases such as "use codex", "delegate to codex", "codex mode", or "delegate mode" as equivalent to `delegate:codex`. A bare mention of "codex" in a prompt (e.g., "fix codex converter bugs") must NOT activate delegation -- only clear delegation intent triggers it.
+
+**Fuzzy deactivation:** Also recognize phrases such as "no codex", "local mode", "standard mode" as equivalent to `delegate:local`.
+
+### Settings Resolution Chain
+
+After extracting tokens from arguments, resolve the delegation state using this precedence chain:
+
+1. **Argument flag** -- `delegate:codex` or `delegate:local` from the current invocation (highest priority)
+2. **Config file** -- extract settings from the config block below. Value `codex` for `work_delegate` activates delegation; `false` deactivates.
+3. **Hard default** -- `false` (delegation off)
+
+**Config (pre-resolved):**
+!`cat "$(git rev-parse --show-toplevel 2>/dev/null)/.compound-engineering/config.local.yaml" 2>/dev/null || cat "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)")/.compound-engineering/config.local.yaml" 2>/dev/null || echo '__NO_CONFIG__'`
+
+If the block above contains YAML key-value pairs, extract values for the keys listed below.
+If it shows `__NO_CONFIG__`, the file does not exist — all settings fall through to defaults.
+If it shows an unresolved command string, read `.compound-engineering/config.local.yaml` from the repo root using the native file-read tool (e.g., Read in Claude Code, read_file in Codex). If the file does not exist, all settings fall through to defaults.
+
+If any setting has an unrecognized value, fall through to the hard default for that setting.
+
+Config keys:
+- `work_delegate` -- `codex` or default `false`
+- `work_delegate_consent` -- `true` or default `false`
+- `work_delegate_sandbox` -- `yolo` (default) or `full-auto`
+- `work_delegate_decision` -- `auto` (default) or `ask`
+- `work_delegate_model` -- Codex model to use (default `gpt-5.4`). Passthrough — any valid model name accepted.
+- `work_delegate_effort` -- `minimal`, `low`, `medium`, `high` (default), or `xhigh`
+
+Store the resolved state for downstream consumption:
+- `delegation_active` -- boolean, whether delegation mode is on
+- `delegation_source` -- `argument` or `config` or `default` -- how delegation was resolved (used by environment guard to decide notification verbosity)
+- `sandbox_mode` -- `yolo` or `full-auto` (from config or default `yolo`)
+- `consent_granted` -- boolean (from config `work_delegate_consent`)
+- `delegate_model` -- string (from config or default `gpt-5.4`)
+- `delegate_effort` -- string (from config or default `high`)
+
+---
+
+## Execution Workflow
+
+### Phase 0: Input Triage
+
+Determine how to proceed based on what was provided in `<input_document>`.
+
+**Plan document** (input is a file path to an existing plan, specification, or todo file) → skip to Phase 1.
+
+**Bare prompt** (input is a description of work, not a file path):
+
+1. **Scan the work area**
+
+   - Identify files likely to change based on the prompt
+   - Find existing test files for those areas (search for test/spec files that import, reference, or share names with the implementation files)
+   - Note local patterns and conventions in the affected areas
+
+2. **Assess complexity and route**
+
+   | Complexity | Signals | Action |
+   |-----------|---------|--------|
+   | **Trivial** | 1-2 files, no behavioral change (typo, config, rename) | Proceed to Phase 1 step 2 (environment setup), then implement directly — no task list, no execution loop. Apply Test Discovery if the change touches behavior-bearing code |
+   | **Small / Medium** | Clear scope, under ~10 files | Build a task list from discovery. Proceed to Phase 1 step 2 |
+   | **Large** | Cross-cutting, architectural decisions, 10+ files, touches auth/payments/migrations | Inform the user this would benefit from `/ce:brainstorm` or `/ce:plan` to surface edge cases and scope boundaries. Honor their choice. If proceeding, build a task list and continue to Phase 1 step 2 |
+
+---
+
+### Phase 1: Quick Start
+
+1. **Read Plan and Clarify** _(skip if arriving from Phase 0 with a bare prompt)_
+>>>>>>> upstream/main
 
    - Read the work document completely
    - Treat the plan as a decision artifact, not an execution script
@@ -50,8 +149,22 @@ This command takes a work document (plan, specification, or todo file) and execu
    ```
 
    **If already on a feature branch** (not the default branch):
+<<<<<<< HEAD
    - Ask: "Continue working on `[current_branch]`, or create a new branch?"
    - If continuing, proceed to step 3
+=======
+
+   First, check whether the branch name is **meaningful** — a name like `feat/crowd-sniff` or `fix/email-validation` tells future readers what the work is about. Auto-generated worktree names (e.g., `worktree-jolly-beaming-raven`) or other opaque names do not.
+
+   If the branch name is meaningless or auto-generated, suggest renaming it before continuing:
+   ```bash
+   git branch -m <meaningful-name>
+   ```
+   Derive the new name from the plan title or work description (e.g., `feat/crowd-sniff`). Present the rename as a recommended option alongside continuing as-is.
+
+   Then ask: "Continue working on `[current_branch]`, or create a new branch?"
+   - If continuing (with or without rename), proceed to step 3
+>>>>>>> upstream/main
    - If creating new, follow Option A or B below
 
    **If on the default branch**, choose how to proceed:
@@ -79,7 +192,11 @@ This command takes a work document (plan, specification, or todo file) and execu
    - You want to keep the default branch clean while experimenting
    - You plan to switch between branches frequently
 
+<<<<<<< HEAD
 3. **Create Todo List**
+=======
+3. **Create Todo List** _(skip if Phase 0 already built one, or if Phase 0 routed as Trivial)_
+>>>>>>> upstream/main
    - Use your available task tracking tool (e.g., TodoWrite, task lists) to break the plan into actionable tasks
    - Derive tasks from the plan's implementation units, dependencies, files, test targets, and verification criteria
    - Carry each unit's `Execution note` into the task when present
@@ -93,22 +210,66 @@ This command takes a work document (plan, specification, or todo file) and execu
 
 4. **Choose Execution Strategy**
 
+<<<<<<< HEAD
+=======
+   **Delegation routing gate:** If `delegation_active` is true AND the input is a plan file (not a bare prompt), read `references/codex-delegation-workflow.md` and follow its Pre-Delegation Checks and Delegation Decision flow. If all checks pass and delegation proceeds, force **serial execution** and proceed directly to Phase 2 using the workflow's batched execution loop. If any check disables delegation, fall through to the standard strategy table below. If delegation is active but the input is a bare prompt (no plan file), set `delegation_active` to false with a brief note: "Codex delegation requires a plan file -- using standard mode." and continue with the standard strategy selection below.
+
+>>>>>>> upstream/main
    After creating the task list, decide how to execute based on the plan's size and dependency structure:
 
    | Strategy | When to use |
    |----------|-------------|
+<<<<<<< HEAD
    | **Inline** | 1-2 small tasks, or tasks needing user interaction mid-flight |
    | **Serial subagents** | 3+ tasks with dependencies between them. Each subagent gets a fresh context window focused on one unit — prevents context degradation across many tasks |
    | **Parallel subagents** | 3+ tasks where some units have no shared dependencies and touch non-overlapping files. Dispatch independent units simultaneously, run dependent units after their prerequisites complete |
+=======
+   | **Inline** | 1-2 small tasks, or tasks needing user interaction mid-flight. **Default for bare-prompt work** — bare prompts rarely produce enough structured context to justify subagent dispatch |
+   | **Serial subagents** | 3+ tasks with dependencies between them. Each subagent gets a fresh context window focused on one unit — prevents context degradation across many tasks. Requires plan-unit metadata (Goal, Files, Approach, Test scenarios) |
+   | **Parallel subagents** | 3+ tasks that pass the Parallel Safety Check (below). Dispatch independent units simultaneously, run dependent units after their prerequisites complete. Requires plan-unit metadata |
+
+   **Parallel Safety Check** — required before choosing parallel dispatch:
+
+   1. Build a file-to-unit mapping from every candidate unit's `Files:` section (Create, Modify, and Test paths)
+   2. Check for intersection — any file path appearing in 2+ units means overlap
+   3. If any overlap is found, downgrade to serial subagents. Log the reason (e.g., "Units 2 and 4 share `config/routes.rb` — using serial dispatch"). Serial subagents still provide context-window isolation without shared-directory risks
+
+   Even with no file overlap, parallel subagents sharing a working directory face git index contention (concurrent staging/committing corrupts the index) and test interference (concurrent test runs pick up each other's in-progress changes). The parallel subagent constraints below mitigate these.
+>>>>>>> upstream/main
 
    **Subagent dispatch** uses your available subagent or task spawning mechanism. For each unit, give the subagent:
    - The full plan file path (for overall context)
    - The specific unit's Goal, Files, Approach, Execution note, Patterns, Test scenarios, and Verification
    - Any resolved deferred questions relevant to that unit
+<<<<<<< HEAD
 
    After each subagent completes, update the plan checkboxes and task list before dispatching the next dependent unit.
 
    For genuinely large plans needing persistent inter-agent communication (agents challenging each other's approaches, shared coordination across 10+ tasks), see Swarm Mode below which uses Agent Teams.
+=======
+   - Instruction to check whether the unit's test scenarios cover all applicable categories (happy paths, edge cases, error paths, integration) and supplement gaps before writing tests
+
+   **Parallel subagent constraints** — when dispatching units in parallel (not serial or inline):
+   - Instruct each subagent: "Do not stage files (`git add`), create commits, or run the project test suite. The orchestrator handles testing, staging, and committing after all parallel units complete."
+   - These constraints prevent git index contention and test interference between concurrent subagents
+
+   **Permission mode:** Omit the `mode` parameter when dispatching subagents so the user's configured permission settings apply. Do not pass `mode: "auto"` — it overrides user-level settings like `bypassPermissions`.
+
+   **After each subagent completes (serial mode):**
+   1. Review the subagent's diff — verify changes match the unit's scope and `Files:` list
+   2. Run the relevant test suite to confirm the tree is healthy
+   3. If tests fail, diagnose and fix before proceeding — do not dispatch dependent units on a broken tree
+   4. Update the plan checkboxes and task list
+   5. Dispatch the next unit
+
+   **After all parallel subagents in a batch complete:**
+   1. Wait for every subagent in the current parallel batch to finish before acting on any of their results
+   2. Cross-check for discovered file collisions: compare the actual files modified by all subagents in the batch (not just their declared `Files:` lists). Subagents may create or modify files not anticipated during planning — this is expected, since plans describe *what* not *how*. A collision only matters when 2+ subagents in the same batch modified the same file. In a shared working directory, only the last writer's version survives — the other unit's changes to that file are lost. If a collision is detected: commit all non-colliding files from all units first, then re-run the affected units serially for the shared file so each builds on the other's committed work
+   3. For each completed unit, in dependency order: review the diff, run the relevant test suite, stage only that unit's files, and commit with a conventional message derived from the unit's Goal
+   4. If tests fail after committing a unit's changes, diagnose and fix before committing the next unit
+   5. Update the plan checkboxes and task list
+   6. Dispatch the next batch of independent units, or the next dependent unit
+>>>>>>> upstream/main
 
 ### Phase 2: Execute
 
@@ -119,12 +280,25 @@ This command takes a work document (plan, specification, or todo file) and execu
    ```
    while (tasks remain):
      - Mark task as in-progress
+<<<<<<< HEAD
      - Read any referenced files from the plan
      - Look for similar patterns in codebase
      - Implement following existing conventions
      - Write tests for new functionality
      - Run System-Wide Test Check (see below)
      - Run tests after changes
+=======
+     - Read any referenced files from the plan or discovered during Phase 0
+     - Look for similar patterns in codebase
+     - Find existing test files for implementation files being changed (Test Discovery — see below)
+     - If delegation_active: branch to the Codex Delegation Execution Loop
+       (see `references/codex-delegation-workflow.md`)
+     - Otherwise: implement following existing conventions
+     - Add, update, or remove tests to match implementation changes (see Test Discovery below)
+     - Run System-Wide Test Check (see below)
+     - Run tests after changes
+     - Assess testing coverage: did this task change behavior? If yes, were tests written or updated? If no tests were added, is the justification deliberate (e.g., pure config, no behavioral change)?
+>>>>>>> upstream/main
      - Mark task as completed
      - Evaluate for incremental commit (see below)
    ```
@@ -137,6 +311,20 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Do not over-implement beyond the current behavior slice when working test-first
    - Skip test-first discipline for trivial renames, pure configuration, and pure styling work
 
+<<<<<<< HEAD
+=======
+   **Test Discovery** — Before implementing changes to a file, find its existing test files (search for test/spec files that import, reference, or share naming patterns with the implementation file). When a plan specifies test scenarios or test files, start there, then check for additional test coverage the plan may not have enumerated. Changes to implementation files should be accompanied by corresponding test updates — new tests for new behavior, modified tests for changed behavior, removed or updated tests for deleted behavior.
+
+   **Test Scenario Completeness** — Before writing tests for a feature-bearing unit, check whether the plan's `Test scenarios` cover all categories that apply to this unit. If a category is missing or scenarios are vague (e.g., "validates correctly" without naming inputs and expected outcomes), supplement from the unit's own context before writing tests:
+
+   | Category | When it applies | How to derive if missing |
+   |----------|----------------|------------------------|
+   | **Happy path** | Always for feature-bearing units | Read the unit's Goal and Approach for core input/output pairs |
+   | **Edge cases** | When the unit has meaningful boundaries (inputs, state, concurrency) | Identify boundary values, empty/nil inputs, and concurrent access patterns |
+   | **Error/failure paths** | When the unit has failure modes (validation, external calls, permissions) | Enumerate invalid inputs the unit should reject, permission/auth denials it should enforce, and downstream failures it should handle |
+   | **Integration** | When the unit crosses layers (callbacks, middleware, multi-service) | Identify the cross-layer chain and write a scenario that exercises it without mocks |
+
+>>>>>>> upstream/main
    **System-Wide Test Check** — Before marking a task done, pause and ask:
 
    | Question | What to do |
@@ -183,6 +371,11 @@ This command takes a work document (plan, specification, or todo file) and execu
 
    **Note:** Incremental commits use clean conventional messages without attribution footers. The final Phase 4 commit/PR includes the full attribution.
 
+<<<<<<< HEAD
+=======
+   **Parallel subagent mode:** When units run as parallel subagents, the subagents do not commit — the orchestrator handles staging and committing after the entire parallel batch completes (see Parallel subagent constraints in Phase 1 Step 4). The commit guidance in this section applies to inline and serial execution, and to the orchestrator's commit decisions after parallel batch completion.
+
+>>>>>>> upstream/main
 3. **Follow Existing Patterns**
 
    - The plan should reference similar code - read those files first
@@ -196,7 +389,11 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Run relevant tests after each significant change
    - Don't wait until the end to test
    - Fix failures immediately
+<<<<<<< HEAD
    - Add new tests for new functionality
+=======
+   - Add new tests for new behavior, update tests for changed behavior, remove tests for deleted behavior
+>>>>>>> upstream/main
    - **Unit tests with mocks prove logic in isolation. Integration tests with real objects prove the layers work together.** If your change touches callbacks, middleware, or error handling — you need both.
 
 5. **Simplify as You Go**
@@ -230,6 +427,7 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Create new tasks if scope expands
    - Keep user informed of major milestones
 
+<<<<<<< HEAD
 ### Phase 3: Quality Check
 
 1. **Run Core Quality Checks**
@@ -489,6 +687,17 @@ When some tasks are executed by the delegate and others by the current agent, us
 - If all tasks used the delegate: attribute to the delegate model
 - If all tasks used standard mode: attribute to the current agent's model
 - If mixed: use `Generated with [CURRENT_MODEL] + [DELEGATE_MODEL] via [HARNESS]` and note which tasks were delegated in the PR description
+=======
+### Phase 3-4: Quality Check and Ship It
+
+When all Phase 2 tasks are complete and execution transitions to quality check, read `references/shipping-workflow.md` for the full shipping workflow: quality checks, code review, final validation, PR creation, and notification.
+
+---
+
+## Codex Delegation Mode
+
+When `delegation_active` is true after argument parsing, read `references/codex-delegation-workflow.md` for the complete delegation workflow: pre-checks, batching, prompt template, execution loop, and result classification.
+>>>>>>> upstream/main
 
 ---
 
@@ -517,7 +726,11 @@ When some tasks are executed by the delegate and others by the current agent, us
 - Follow existing patterns
 - Write tests for new code
 - Run linting before pushing
+<<<<<<< HEAD
 - Use reviewer agents for complex/risky changes only
+=======
+- Review every change — inline for simple additive work, full review for everything else
+>>>>>>> upstream/main
 
 ### Ship Complete Features
 
@@ -525,6 +738,7 @@ When some tasks are executed by the delegate and others by the current agent, us
 - Don't leave features 80% done
 - A finished feature that ships beats a perfect feature that doesn't
 
+<<<<<<< HEAD
 ## Quality Checklist
 
 Before creating PR, verify:
@@ -553,6 +767,8 @@ Before creating PR, verify:
 
 For most features: tests + linting + following patterns is sufficient.
 
+=======
+>>>>>>> upstream/main
 ## Common Pitfalls to Avoid
 
 - **Analysis paralysis** - Don't overthink, read the plan and execute
@@ -561,4 +777,8 @@ For most features: tests + linting + following patterns is sufficient.
 - **Testing at the end** - Test continuously or suffer later
 - **Forgetting to track progress** - Update task status as you go or lose track of what's done
 - **80% done syndrome** - Finish the feature, don't move on early
+<<<<<<< HEAD
 - **Over-reviewing simple changes** - Save reviewer agents for complex work
+=======
+- **Skipping review** - Every change gets reviewed; only the depth varies
+>>>>>>> upstream/main

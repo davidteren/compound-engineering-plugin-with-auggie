@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test"
+import { promises as fs } from "fs"
+import os from "os"
+import path from "path"
 import { convertClaudeToCodex } from "../src/converters/claude-to-codex"
 import { parseFrontmatter } from "../src/utils/frontmatter"
 import type { ClaudePlugin } from "../src/types/claude"
@@ -77,6 +80,32 @@ describe("convertClaudeToCodex", () => {
     expect(parsedSkill.data.description).toBe("Security-focused agent")
     expect(parsedSkill.body).toContain("Capabilities")
     expect(parsedSkill.body).toContain("Threat modeling")
+  })
+
+  test("drops model field (Codex skill frontmatter does not support model)", () => {
+    const plugin: ClaudePlugin = {
+      ...fixturePlugin,
+      agents: [
+        {
+          name: "fast-agent",
+          description: "Fast agent",
+          model: "sonnet",
+          body: "Do things quickly.",
+          sourcePath: "/tmp/plugin/agents/fast.md",
+        },
+      ],
+      commands: [],
+      skills: [],
+    }
+
+    const bundle = convertClaudeToCodex(plugin, {
+      agentMode: "subagent",
+      inferTemperature: false,
+      permissions: "none",
+    })
+
+    const skill = bundle.generatedSkills.find((s) => s.name === "fast-agent")
+    expect(parseFrontmatter(skill!.content).data.model).toBeUndefined()
   })
 
   test("generates prompt wrappers for canonical ce workflow skills and omits workflows aliases", () => {
@@ -286,7 +315,7 @@ Task compound-engineering:review:security-reviewer(code_diff)`,
           description: "Planning with commands",
           body: `After planning, you can:
 
-1. Run /deepen-plan to enhance
+1. Run /todo-resolve to enhance
 2. Run /plan_review for feedback
 3. Start /workflows:work to implement
 
@@ -309,13 +338,53 @@ Don't confuse with file paths like /tmp/output.md or /dev/null.`,
     const parsed = parseFrontmatter(commandSkill!.content)
 
     // Slash commands should be transformed to /prompts: syntax
-    expect(parsed.body).toContain("/prompts:deepen-plan")
+    expect(parsed.body).toContain("/prompts:todo-resolve")
     expect(parsed.body).toContain("/prompts:plan_review")
     expect(parsed.body).toContain("/prompts:workflows-work")
 
     // File paths should NOT be transformed
     expect(parsed.body).toContain("/tmp/output.md")
     expect(parsed.body).toContain("/dev/null")
+  })
+
+  test("preserves agent script paths and tracks referenced sidecar directories", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-agent-sidecar-"))
+    const agentDir = path.join(tempRoot, "agents", "research")
+    const scriptDir = path.join(agentDir, "session-history-scripts")
+    await fs.mkdir(scriptDir, { recursive: true })
+
+    const plugin: ClaudePlugin = {
+      ...fixturePlugin,
+      commands: [],
+      skills: [],
+      agents: [
+        {
+          name: "session-historian",
+          description: "Session history research",
+          body: [
+            "Locate the `session-history-scripts/` directory.",
+            "Run `bash <script-dir>/discover-sessions.sh repo 7`.",
+          ].join("\n"),
+          sourcePath: path.join(agentDir, "session-historian.md"),
+        },
+      ],
+    }
+
+    const bundle = convertClaudeToCodex(plugin, {
+      agentMode: "subagent",
+      inferTemperature: false,
+      permissions: "none",
+    })
+
+    const agentSkill = bundle.generatedSkills.find((s) => s.name === "session-historian")
+    expect(agentSkill).toBeDefined()
+    expect(agentSkill!.sidecarDirs).toEqual([
+      { sourceDir: scriptDir, targetName: "session-history-scripts" },
+    ])
+
+    const parsed = parseFrontmatter(agentSkill!.content)
+    expect(parsed.body).toContain("<script-dir>/discover-sessions.sh")
+    expect(parsed.body).not.toContain("<script-dir>/prompts:discover-sessions.sh")
   })
 
   test("transforms canonical workflow slash commands to Codex prompt references", () => {

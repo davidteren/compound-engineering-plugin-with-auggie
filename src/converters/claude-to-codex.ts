@@ -1,6 +1,8 @@
+import fs, { type Dirent } from "fs"
+import path from "path"
 import { formatFrontmatter } from "../utils/frontmatter"
-import type { ClaudeAgent, ClaudeCommand, ClaudePlugin, ClaudeSkill } from "../types/claude"
-import type { CodexBundle, CodexGeneratedSkill } from "../types/codex"
+import { type ClaudeAgent, type ClaudeCommand, type ClaudePlugin, type ClaudeSkill, filterSkillsByPlatform } from "../types/claude"
+import type { CodexBundle, CodexGeneratedSkill, CodexGeneratedSkillSidecarDir } from "../types/codex"
 import type { ClaudeToOpenCodeOptions } from "./claude-to-opencode"
 import {
   normalizeCodexName,
@@ -16,17 +18,18 @@ export function convertClaudeToCodex(
   plugin: ClaudePlugin,
   _options: ClaudeToCodexOptions,
 ): CodexBundle {
+  const platformSkills = filterSkillsByPlatform(plugin.skills, "codex")
   const invocableCommands = plugin.commands.filter((command) => !command.disableModelInvocation)
   const applyCompoundWorkflowModel = shouldApplyCompoundWorkflowModel(plugin)
   const canonicalWorkflowSkills = applyCompoundWorkflowModel
-    ? plugin.skills.filter((skill) => isCanonicalCodexWorkflowSkill(skill.name))
+    ? platformSkills.filter((skill) => isCanonicalCodexWorkflowSkill(skill.name))
     : []
   const deprecatedWorkflowAliases = applyCompoundWorkflowModel
-    ? plugin.skills.filter((skill) => isDeprecatedCodexWorkflowAlias(skill.name))
+    ? platformSkills.filter((skill) => isDeprecatedCodexWorkflowAlias(skill.name))
     : []
   const copiedSkills = applyCompoundWorkflowModel
-    ? plugin.skills.filter((skill) => !isDeprecatedCodexWorkflowAlias(skill.name))
-    : plugin.skills
+    ? platformSkills.filter((skill) => !isDeprecatedCodexWorkflowAlias(skill.name))
+    : platformSkills
   const skillDirs = copiedSkills.map((skill) => ({
     name: skill.name,
     sourceDir: skill.sourceDir,
@@ -121,7 +124,7 @@ function convertAgent(
   }
 
   const content = formatFrontmatter(frontmatter, body)
-  return { name, content }
+  return { name, content, sidecarDirs: collectReferencedSidecarDirs(agent) }
 }
 
 function convertCommandSkill(
@@ -213,4 +216,23 @@ function uniqueName(base: string, used: Set<string>): string {
   const name = `${base}-${index}`
   used.add(name)
   return name
+}
+
+function collectReferencedSidecarDirs(agent: ClaudeAgent): CodexGeneratedSkillSidecarDir[] {
+  const sourceDir = path.dirname(agent.sourcePath)
+  let entries: Dirent[]
+
+  try {
+    entries = fs.readdirSync(sourceDir, { withFileTypes: true })
+  } catch {
+    return []
+  }
+
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .filter((entry) => agent.body.includes(`${entry.name}/`) || agent.body.includes(`\`${entry.name}\``))
+    .map((entry) => ({
+      sourceDir: path.join(sourceDir, entry.name),
+      targetName: entry.name,
+    }))
 }
