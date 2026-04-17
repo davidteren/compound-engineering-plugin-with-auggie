@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { promises as fs } from "fs"
 import path from "path"
 import os from "os"
-import { writeCodexBundle } from "../src/targets/codex"
+import { mergeCodexConfig, renderCodexConfig, writeCodexBundle } from "../src/targets/codex"
 import type { CodexBundle } from "../src/types/codex"
 
 async function exists(filePath: string): Promise<boolean> {
@@ -44,6 +44,8 @@ describe("writeCodexBundle", () => {
     expect(await exists(configPath)).toBe(true)
 
     const config = await fs.readFile(configPath, "utf8")
+    expect(config).toContain("# BEGIN Compound Engineering plugin MCP -- do not edit this block")
+    expect(config).toContain("# END Compound Engineering plugin MCP")
     expect(config).toContain("[mcp_servers.local]")
     expect(config).toContain("command = \"echo\"")
     expect(config).toContain("args = [\"hello\"]")
@@ -74,12 +76,44 @@ describe("writeCodexBundle", () => {
     expect(await exists(path.join(codexRoot, "skills", "skill-one", "SKILL.md"))).toBe(true)
   })
 
-  test("backs up existing config.toml before overwriting", async () => {
+  test("copies generated skill sidecar directories", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sidecar-"))
+    const sidecarDir = path.join(tempRoot, "source", "session-history-scripts")
+    await fs.mkdir(sidecarDir, { recursive: true })
+    await fs.writeFile(path.join(sidecarDir, "discover-sessions.sh"), "#!/usr/bin/env bash\n")
+
+    const bundle: CodexBundle = {
+      prompts: [],
+      skillDirs: [],
+      generatedSkills: [
+        {
+          name: "session-historian",
+          content: "Skill content",
+          sidecarDirs: [{ sourceDir: sidecarDir, targetName: "session-history-scripts" }],
+        },
+      ],
+    }
+
+    await writeCodexBundle(tempRoot, bundle)
+
+    expect(await exists(
+      path.join(
+        tempRoot,
+        ".codex",
+        "skills",
+        "session-historian",
+        "session-history-scripts",
+        "discover-sessions.sh",
+      ),
+    )).toBe(true)
+  })
+
+  test("preserves existing user config when writing MCP servers", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-backup-"))
     const codexRoot = path.join(tempRoot, ".codex")
     const configPath = path.join(codexRoot, "config.toml")
 
-    // Create existing config
+    // Create existing config with user settings
     await fs.mkdir(codexRoot, { recursive: true })
     const originalContent = "# My original config\n[custom]\nkey = \"value\"\n"
     await fs.writeFile(configPath, originalContent)
@@ -93,17 +127,137 @@ describe("writeCodexBundle", () => {
 
     await writeCodexBundle(codexRoot, bundle)
 
-    // New config should be written
     const newConfig = await fs.readFile(configPath, "utf8")
+    // Plugin MCP servers should be present in a managed block
     expect(newConfig).toContain("[mcp_servers.test]")
+    expect(newConfig).toContain("# BEGIN Compound Engineering plugin MCP -- do not edit this block")
+    expect(newConfig).toContain("# END Compound Engineering plugin MCP")
+    // User's original config should be preserved
+    expect(newConfig).toContain("# My original config")
+    expect(newConfig).toContain("[custom]")
+    expect(newConfig).toContain('key = "value"')
 
-    // Backup should exist with original content
+    // Backup should still exist with original content
     const files = await fs.readdir(codexRoot)
     const backupFileName = files.find((f) => f.startsWith("config.toml.bak."))
     expect(backupFileName).toBeDefined()
 
     const backupContent = await fs.readFile(path.join(codexRoot, backupFileName!), "utf8")
     expect(backupContent).toBe(originalContent)
+  })
+
+  test("is idempotent — running twice does not duplicate managed block", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-idempotent-"))
+    const codexRoot = path.join(tempRoot, ".codex")
+    const configPath = path.join(codexRoot, "config.toml")
+
+    await fs.mkdir(codexRoot, { recursive: true })
+    await fs.writeFile(configPath, "[user]\nmodel = \"gpt-4.1\"\n")
+
+    const bundle: CodexBundle = {
+      prompts: [],
+      skillDirs: [],
+      generatedSkills: [],
+      mcpServers: { test: { command: "echo" } },
+    }
+
+    await writeCodexBundle(codexRoot, bundle)
+    await writeCodexBundle(codexRoot, bundle)
+
+    const config = await fs.readFile(configPath, "utf8")
+    expect(config.match(/# BEGIN Compound Engineering plugin MCP/g)?.length).toBe(1)
+    expect(config.match(/# END Compound Engineering plugin MCP/g)?.length).toBe(1)
+    expect(config).toContain("[user]")
+  })
+
+  test("migrates old managed block markers to new ones", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-migrate-"))
+    const codexRoot = path.join(tempRoot, ".codex")
+    const configPath = path.join(codexRoot, "config.toml")
+
+    await fs.mkdir(codexRoot, { recursive: true })
+    await fs.writeFile(configPath, [
+      "[user]",
+      'model = "gpt-4.1"',
+      "",
+      "# BEGIN compound-plugin Claude Code MCP",
+      "[mcp_servers.old]",
+      'command = "old"',
+      "# END compound-plugin Claude Code MCP",
+    ].join("\n"))
+
+    const bundle: CodexBundle = {
+      prompts: [],
+      skillDirs: [],
+      generatedSkills: [],
+      mcpServers: { fresh: { command: "new" } },
+    }
+
+    await writeCodexBundle(codexRoot, bundle)
+
+    const config = await fs.readFile(configPath, "utf8")
+    expect(config).not.toContain("# BEGIN compound-plugin Claude Code MCP")
+    expect(config).toContain("# BEGIN Compound Engineering plugin MCP")
+    expect(config).not.toContain("[mcp_servers.old]")
+    expect(config).toContain("[mcp_servers.fresh]")
+    expect(config).toContain("[user]")
+  })
+
+  test("migrates unmarked legacy format (# Generated by compound-plugin)", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-unmarked-"))
+    const codexRoot = path.join(tempRoot, ".codex")
+    const configPath = path.join(codexRoot, "config.toml")
+
+    // Simulate old writer output: entire file was just the generated config
+    await fs.mkdir(codexRoot, { recursive: true })
+    await fs.writeFile(configPath, [
+      "# Generated by compound-plugin",
+      "",
+      "[mcp_servers.old]",
+      'command = "old"',
+      "",
+    ].join("\n"))
+
+    const bundle: CodexBundle = {
+      prompts: [],
+      skillDirs: [],
+      generatedSkills: [],
+      mcpServers: { fresh: { command: "new" } },
+    }
+
+    await writeCodexBundle(codexRoot, bundle)
+
+    const config = await fs.readFile(configPath, "utf8")
+    expect(config).not.toContain("# Generated by compound-plugin")
+    expect(config).not.toContain("[mcp_servers.old]")
+    expect(config).toContain("# BEGIN Compound Engineering plugin MCP")
+    expect(config).toContain("[mcp_servers.fresh]")
+    // Should have exactly one BEGIN marker (no duplication)
+    expect(config.match(/# BEGIN Compound Engineering plugin MCP/g)?.length).toBe(1)
+  })
+
+  test("strips stale managed block when plugin has no MCP servers", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-stale-"))
+    const codexRoot = path.join(tempRoot, ".codex")
+    const configPath = path.join(codexRoot, "config.toml")
+
+    await fs.mkdir(codexRoot, { recursive: true })
+    await fs.writeFile(configPath, [
+      "[user]",
+      'model = "gpt-4.1"',
+      "",
+      "# BEGIN Compound Engineering plugin MCP -- do not edit this block",
+      "[mcp_servers.stale]",
+      'command = "should-be-removed"',
+      "# END Compound Engineering plugin MCP",
+    ].join("\n"))
+
+    await writeCodexBundle(codexRoot, { prompts: [], skillDirs: [], generatedSkills: [] })
+
+    const config = await fs.readFile(configPath, "utf8")
+    expect(config).not.toContain("mcp_servers.stale")
+    expect(config).not.toContain("# BEGIN Compound Engineering")
+    expect(config).toContain("[user]")
   })
 
   test("transforms copied SKILL.md files using Codex invocation targets", async () => {
@@ -119,7 +273,7 @@ description: Brainstorm workflow
 
 Continue with /ce:plan when ready.
 Or use /workflows:plan if you're following an older doc.
-Use /deepen-plan for deeper research.
+Use /todo-resolve for deeper research.
 `,
     )
     await fs.writeFile(
@@ -135,7 +289,7 @@ Use /deepen-plan for deeper research.
         promptTargets: {
           "ce-plan": "ce-plan",
           "workflows-plan": "ce-plan",
-          "deepen-plan": "deepen-plan",
+          "todo-resolve": "todo-resolve",
         },
         skillTargets: {},
       },
@@ -144,15 +298,15 @@ Use /deepen-plan for deeper research.
     await writeCodexBundle(tempRoot, bundle)
 
     const installedSkill = await fs.readFile(
-      path.join(tempRoot, ".codex", "skills", "ce:brainstorm", "SKILL.md"),
+      path.join(tempRoot, ".codex", "skills", "ce-brainstorm", "SKILL.md"),
       "utf8",
     )
     expect(installedSkill).toContain("/prompts:ce-plan")
     expect(installedSkill).not.toContain("/workflows:plan")
-    expect(installedSkill).toContain("/prompts:deepen-plan")
+    expect(installedSkill).toContain("/prompts:todo-resolve")
 
     const notes = await fs.readFile(
-      path.join(tempRoot, ".codex", "skills", "ce:brainstorm", "notes.md"),
+      path.join(tempRoot, ".codex", "skills", "ce-brainstorm", "notes.md"),
       "utf8",
     )
     expect(notes).toContain("/ce:plan")
@@ -194,7 +348,7 @@ Also run bare agents:
     await writeCodexBundle(tempRoot, bundle)
 
     const installedSkill = await fs.readFile(
-      path.join(tempRoot, ".codex", "skills", "ce:plan", "SKILL.md"),
+      path.join(tempRoot, ".codex", "skills", "ce-plan", "SKILL.md"),
       "utf8",
     )
 
@@ -263,5 +417,191 @@ Workflow handoff:
     expect(installedSkill).not.toContain("/prompts:users")
     expect(installedSkill).not.toContain("/prompts:settings")
     expect(installedSkill).not.toContain("https://prompts:www.proofeditor.ai")
+  })
+})
+
+describe("renderCodexConfig", () => {
+  test("skips servers with neither command nor url", () => {
+    const result = renderCodexConfig({ broken: {} })
+    expect(result).toBeNull()
+  })
+
+  test("skips malformed servers but keeps valid ones", () => {
+    const result = renderCodexConfig({
+      valid: { command: "echo" },
+      broken: {},
+      alsoValid: { url: "https://example.com/mcp" },
+    })
+    expect(result).not.toBeNull()
+    expect(result).toContain("[mcp_servers.valid]")
+    expect(result).toContain("[mcp_servers.alsoValid]")
+    expect(result).not.toContain("[mcp_servers.broken]")
+  })
+
+  test("returns null for empty or undefined input", () => {
+    expect(renderCodexConfig(undefined)).toBeNull()
+    expect(renderCodexConfig({})).toBeNull()
+  })
+})
+
+describe("mergeCodexConfig", () => {
+  test("returns managed block when no existing content", () => {
+    const result = mergeCodexConfig("", "[mcp_servers.test]\ncommand = \"echo\"")
+    expect(result).toContain("# BEGIN Compound Engineering plugin MCP")
+    expect(result).toContain("[mcp_servers.test]")
+    expect(result).toContain("# END Compound Engineering plugin MCP")
+  })
+
+  test("preserves user content and replaces managed block", () => {
+    const existing = [
+      "[user]",
+      'model = "gpt-4.1"',
+      "",
+      "# BEGIN Compound Engineering plugin MCP -- do not edit this block",
+      "[mcp_servers.old]",
+      'command = "old"',
+      "# END Compound Engineering plugin MCP",
+      "",
+      "[after]",
+      'key = "value"',
+    ].join("\n")
+
+    const result = mergeCodexConfig(existing, "[mcp_servers.new]\ncommand = \"new\"")!
+    expect(result).toContain("[user]")
+    expect(result).toContain("[after]")
+    expect(result).not.toContain("[mcp_servers.old]")
+    expect(result).toContain("[mcp_servers.new]")
+  })
+
+  test("strips previous-generation markers", () => {
+    const existing = [
+      "[user]",
+      'model = "gpt-4.1"',
+      "",
+      "# BEGIN compound-plugin Claude Code MCP",
+      "[mcp_servers.old]",
+      'command = "old"',
+      "# END compound-plugin Claude Code MCP",
+    ].join("\n")
+
+    const result = mergeCodexConfig(existing, "[mcp_servers.new]\ncommand = \"new\"")!
+    expect(result).not.toContain("# BEGIN compound-plugin Claude Code MCP")
+    expect(result).not.toContain("[mcp_servers.old]")
+    expect(result).toContain("# BEGIN Compound Engineering plugin MCP")
+    expect(result).toContain("[mcp_servers.new]")
+  })
+
+  test("returns cleaned content (no block) when mcpToml is null", () => {
+    const existing = [
+      "[user]",
+      'model = "gpt-4.1"',
+      "",
+      "# BEGIN Compound Engineering plugin MCP -- do not edit this block",
+      "[mcp_servers.stale]",
+      'command = "stale"',
+      "# END Compound Engineering plugin MCP",
+    ].join("\n")
+
+    const result = mergeCodexConfig(existing, null)!
+    expect(result).toContain("[user]")
+    expect(result).not.toContain("mcp_servers.stale")
+    expect(result).not.toContain("# BEGIN")
+  })
+
+  test("strips unmarked legacy format (# Generated by compound-plugin)", () => {
+    const existing = [
+      "# Generated by compound-plugin",
+      "",
+      "[mcp_servers.old]",
+      'command = "old"',
+      "",
+    ].join("\n")
+
+    const result = mergeCodexConfig(existing, "[mcp_servers.new]\ncommand = \"new\"")!
+    expect(result).not.toContain("# Generated by compound-plugin")
+    expect(result).not.toContain("[mcp_servers.old]")
+    expect(result).toContain("# BEGIN Compound Engineering plugin MCP")
+    expect(result).toContain("[mcp_servers.new]")
+  })
+
+  test("preserves unmarked legacy content when no MCP servers are incoming", () => {
+    const existing = [
+      'model = "gpt-5.4"',
+      "",
+      "# Generated by compound-plugin",
+      "",
+      "[projects.example]",
+      'trust_level = "trusted"',
+    ].join("\n")
+
+    const result = mergeCodexConfig(existing, null)!
+    expect(result).toContain("# Generated by compound-plugin")
+    expect(result).toContain("[projects.example]")
+    expect(result).toContain('trust_level = "trusted"')
+  })
+
+  test("strips bounded legacy MCP block when no MCP servers are incoming", () => {
+    const existing = [
+      "[user]",
+      'model = "gpt-5.4"',
+      "",
+      "# MCP servers synced from Claude Code",
+      "",
+      "[mcp_servers.old]",
+      'command = "old"',
+    ].join("\n")
+
+    const result = mergeCodexConfig(existing, null)!
+    expect(result).toContain("[user]")
+    expect(result).not.toContain("# MCP servers synced from Claude Code")
+    expect(result).not.toContain("[mcp_servers.old]")
+  })
+
+  test("returns existing content byte-for-byte when no MCP servers or managed blocks exist", () => {
+    const existing = [
+      'model = "gpt-5.4"',
+      "",
+      "# Generated by compound-plugin",
+      "",
+      "[projects.example]",
+      'trust_level = "trusted"',
+      "",
+    ].join("\n")
+
+    expect(mergeCodexConfig(existing, null)).toBe(existing)
+  })
+
+  test("preserves user config before unmarked legacy format", () => {
+    const existing = [
+      "[user]",
+      'model = "gpt-4.1"',
+      "",
+      "# Generated by compound-plugin",
+      "",
+      "[mcp_servers.old]",
+      'command = "old"',
+    ].join("\n")
+
+    const result = mergeCodexConfig(existing, "[mcp_servers.new]\ncommand = \"new\"")!
+    expect(result).toContain("[user]")
+    expect(result).not.toContain("# Generated by compound-plugin")
+    expect(result).not.toContain("[mcp_servers.old]")
+    expect(result).toContain("[mcp_servers.new]")
+  })
+
+  test("returns null when no existing content and no mcpToml", () => {
+    expect(mergeCodexConfig("", null)).toBeNull()
+  })
+
+  test("returns empty string when file was only a managed block and mcpToml is null", () => {
+    const existing = [
+      "# BEGIN Compound Engineering plugin MCP -- do not edit this block",
+      "[mcp_servers.stale]",
+      'command = "stale"',
+      "# END Compound Engineering plugin MCP",
+    ].join("\n")
+
+    const result = mergeCodexConfig(existing, null)
+    expect(result).toBe("")
   })
 })

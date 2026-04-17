@@ -5,3 +5,9 @@ node_modules/
 todos/
 .worktrees
 .context/
+<<<<<<< HEAD
+=======
+.claude/worktrees/
+
+.compound-engineering/*.local.yaml
+>>>>>>> upstream/main

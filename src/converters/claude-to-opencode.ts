@@ -1,10 +1,12 @@
 import { formatFrontmatter } from "../utils/frontmatter"
-import type {
-  ClaudeAgent,
-  ClaudeCommand,
-  ClaudeHooks,
-  ClaudePlugin,
-  ClaudeMcpServer,
+import { normalizeModelWithProvider } from "../utils/model"
+import {
+  type ClaudeAgent,
+  type ClaudeCommand,
+  type ClaudeHooks,
+  type ClaudePlugin,
+  type ClaudeMcpServer,
+  filterSkillsByPlatform,
 } from "../types/claude"
 import type {
   OpenCodeBundle,
@@ -82,7 +84,7 @@ export function convertClaudeToOpenCode(
     agents: agentFiles,
     commandFiles: cmdFiles,
     plugins,
-    skillDirs: plugin.skills.map((skill) => ({ sourceDir: skill.sourceDir, name: skill.name })),
+    skillDirs: filterSkillsByPlatform(plugin.skills, "opencode").map((skill) => ({ sourceDir: skill.sourceDir, name: skill.name })),
   }
 }
 
@@ -92,8 +94,12 @@ function convertAgent(agent: ClaudeAgent, options: ClaudeToOpenCodeOptions) {
     mode: options.agentMode,
   }
 
-  if (agent.model && agent.model !== "inherit") {
-    frontmatter.model = normalizeModel(agent.model)
+  // Only write model for primary agents. Subagents inherit from the parent
+  // session, making them provider-agnostic. Writing an explicit model like
+  // "anthropic/claude-haiku-4-5" on a subagent causes ProviderModelNotFoundError
+  // when the user's OpenCode env uses a different provider. See #477.
+  if (agent.model && agent.model !== "inherit" && options.agentMode === "primary") {
+    frontmatter.model = normalizeModelWithProvider(agent.model)
   }
 
   if (options.inferTemperature) {
@@ -121,7 +127,7 @@ function convertCommands(commands: ClaudeCommand[]): OpenCodeCommandFile[] {
       description: command.description,
     }
     if (command.model && command.model !== "inherit") {
-      frontmatter.model = normalizeModel(command.model)
+      frontmatter.model = normalizeModelWithProvider(command.model)
     }
     const content = formatFrontmatter(frontmatter, rewriteClaudePaths(command.body))
     files.push({ name: command.name, content })
@@ -260,6 +266,7 @@ function rewriteClaudePaths(body: string): string {
     .replace(/\.claude\//g, ".opencode/")
 }
 
+<<<<<<< HEAD
 // Bare Claude family aliases used in Claude Code (e.g. `model: haiku`).
 // Update these when new model generations are released.
 const CLAUDE_FAMILY_ALIASES: Record<string, string> = {
@@ -282,6 +289,30 @@ function normalizeModel(model: string): string {
   if (/^(gpt-|o1-|o3-)/.test(model)) return `openai/${model}`
   if (/^gemini-/.test(model)) return `google/${model}`
   return `anthropic/${model}`
+=======
+/**
+ * Transform skill/agent content for OpenCode compatibility.
+ * Composes path rewriting with fully-qualified agent name flattening.
+ *
+ * OpenCode resolves agents by flat filename, so 3-segment FQ references
+ * like `compound-engineering:document-review:coherence-reviewer` must be
+ * rewritten to just `coherence-reviewer`. 2-segment skill references
+ * (e.g. `compound-engineering:document-review`) are left unchanged.
+ * See #477.
+ */
+export function transformSkillContentForOpenCode(body: string): string {
+  let result = rewriteClaudePaths(body)
+  // Rewrite 3-segment FQ agent refs: plugin:category:agent-name -> agent-name.
+  // Boundary assertions prevent partial matching on 4+ segment names
+  // (e.g. `a:b:c:d` would otherwise produce `c:d` or `a:d`).
+  // The `/` in the lookbehind prevents rewriting slash commands like
+  // `/team:ops:deploy` — agent names are never preceded by `/`.
+  result = result.replace(
+    /(?<![a-z0-9:/-])[a-z][a-z0-9-]*:[a-z][a-z0-9-]*:([a-z][a-z0-9-]*)(?![a-z0-9:-])/g,
+    "$1",
+  )
+  return result
+>>>>>>> upstream/main
 }
 
 function inferTemperature(agent: ClaudeAgent): number | undefined {
@@ -345,7 +376,7 @@ function applyPermissions(
     }
   }
 
-  const permission: Record<string, "allow" | "deny"> = {}
+  const permission: Record<string, "allow" | "deny" | Record<string, "allow" | "deny">> = {}
   const tools: Record<string, boolean> = {}
 
   for (const tool of sourceTools) {
@@ -364,7 +395,7 @@ function applyPermissions(
         for (const pattern of toolPatterns) {
           patternPermission[pattern] = "allow"
         }
-        ;(permission as Record<string, typeof patternPermission>)[tool] = patternPermission
+        ;(permission)[tool] = patternPermission
       } else {
         permission[tool] = enabled.has(tool) ? "allow" : "deny"
       }
@@ -378,7 +409,7 @@ function applyPermissions(
       for (const pattern of toolPatterns) {
         patternPermission[pattern] = "allow"
       }
-      ;(permission as Record<string, typeof patternPermission>)[tool] = patternPermission
+      ;(permission)[tool] = patternPermission
     }
   }
 
@@ -394,8 +425,8 @@ function applyPermissions(
     for (const pattern of combined) {
       combinedPermission[pattern] = "allow"
     }
-    ;(permission as Record<string, typeof combinedPermission>).edit = combinedPermission
-    ;(permission as Record<string, typeof combinedPermission>).write = combinedPermission
+    ;(permission).edit = combinedPermission
+    ;(permission).write = combinedPermission
   }
 
   config.permission = permission
