@@ -2,10 +2,11 @@ import { defineCommand } from "citty"
 import { promises as fs } from "fs"
 import os from "os"
 import path from "path"
+import { fileURLToPath } from "url"
 import { loadClaudePlugin } from "../parsers/claude"
 import { targets, validateScope } from "../targets"
 import { pathExists } from "../utils/files"
-import type { PermissionMode } from "../converters/claude-to-opencode"
+import type { ClaudeToOpenCodeOptions, PermissionMode } from "../converters/claude-to-opencode"
 import { ensureCodexAgentsFile } from "../utils/codex-agents"
 import { expandHome, resolveTargetHome } from "../utils/resolve-home"
 import { resolveTargetOutputRoot } from "../utils/resolve-output"
@@ -77,6 +78,10 @@ export default defineCommand({
       default: true,
       description: "Infer agent temperature from name/description",
     },
+    branch: {
+      type: "string",
+      description: "Git branch to clone from (e.g. feat/new-agents)",
+    },
   },
   async run({ args }) {
     const targetName = String(args.to)
@@ -86,7 +91,8 @@ export default defineCommand({
       throw new Error(`Unknown permissions mode: ${permissions}`)
     }
 
-    const resolvedPlugin = await resolvePluginPath(String(args.plugin))
+    const branch = args.branch ? String(args.branch) : undefined
+    const resolvedPlugin = await resolvePluginPath(String(args.plugin), branch)
 
     try {
       const plugin = await loadClaudePlugin(resolvedPlugin.path)
@@ -97,7 +103,7 @@ export default defineCommand({
       const openclawHome = resolveTargetHome(args.openclawHome, path.join(os.homedir(), ".openclaw", "extensions"))
       const qwenHome = resolveTargetHome(args.qwenHome, path.join(os.homedir(), ".qwen", "extensions"))
 
-      const options = {
+      const options: ClaudeToOpenCodeOptions = {
         agentMode: String(args.agentMode) === "primary" ? "primary" : "subagent",
         inferTemperature: Boolean(args.inferTemperature),
         permissions: permissions as PermissionMode,
@@ -224,7 +230,7 @@ type ResolvedPluginPath = {
   cleanup?: () => Promise<void>
 }
 
-async function resolvePluginPath(input: string): Promise<ResolvedPluginPath> {
+async function resolvePluginPath(input: string, branch?: string): Promise<ResolvedPluginPath> {
   // Only treat as a local path if it explicitly looks like one
   if (input.startsWith(".") || input.startsWith("/") || input.startsWith("~")) {
     const expanded = expandHome(input)
@@ -233,8 +239,16 @@ async function resolvePluginPath(input: string): Promise<ResolvedPluginPath> {
     throw new Error(`Local plugin path not found: ${directPath}`)
   }
 
-  // Otherwise, always fetch the latest from GitHub
-  return await resolveGitHubPluginPath(input)
+  // Skip bundled plugins when a branch is specified — the user wants a specific remote version
+  if (!branch) {
+    const bundledPluginPath = await resolveBundledPluginPath(input)
+    if (bundledPluginPath) {
+      return { path: bundledPluginPath }
+    }
+  }
+
+  // Otherwise, fetch from GitHub (optionally from a specific branch)
+  return await resolveGitHubPluginPath(input, branch)
 }
 
 function parseExtraTargets(value: unknown): string[] {
@@ -255,11 +269,21 @@ function resolveOutputRoot(value: unknown): string {
   return path.join(os.homedir(), ".config", "opencode")
 }
 
-async function resolveGitHubPluginPath(pluginName: string): Promise<ResolvedPluginPath> {
+async function resolveBundledPluginPath(pluginName: string): Promise<string | null> {
+  const bundledRoot = fileURLToPath(new URL("../../plugins/", import.meta.url))
+  const pluginPath = path.join(bundledRoot, pluginName)
+  const manifestPath = path.join(pluginPath, ".claude-plugin", "plugin.json")
+  if (await pathExists(manifestPath)) {
+    return pluginPath
+  }
+  return null
+}
+
+async function resolveGitHubPluginPath(pluginName: string, branch?: string): Promise<ResolvedPluginPath> {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "compound-plugin-"))
   const source = resolveGitHubSource()
   try {
-    await cloneGitHubRepo(source, tempRoot)
+    await cloneGitHubRepo(source, tempRoot, branch)
   } catch (error) {
     await fs.rm(tempRoot, { recursive: true, force: true })
     throw error
@@ -285,8 +309,11 @@ function resolveGitHubSource(): string {
   return "https://github.com/EveryInc/compound-engineering-plugin"
 }
 
-async function cloneGitHubRepo(source: string, destination: string): Promise<void> {
-  const proc = Bun.spawn(["git", "clone", "--depth", "1", source, destination], {
+async function cloneGitHubRepo(source: string, destination: string, branch?: string): Promise<void> {
+  const args = ["git", "clone", "--depth", "1"]
+  if (branch) args.push("--branch", branch)
+  args.push(source, destination)
+  const proc = Bun.spawn(args, {
     stdout: "pipe",
     stderr: "pipe",
   })

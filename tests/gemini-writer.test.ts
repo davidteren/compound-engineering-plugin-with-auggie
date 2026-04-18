@@ -94,7 +94,11 @@ Run these research agents:
     await writeGeminiBundle(tempRoot, bundle)
 
     const installedSkill = await fs.readFile(
+<<<<<<< HEAD
       path.join(tempRoot, ".gemini", "skills", "ce:plan", "SKILL.md"),
+=======
+      path.join(tempRoot, ".gemini", "skills", "ce-plan", "SKILL.md"),
+>>>>>>> upstream/main
       "utf8",
     )
 

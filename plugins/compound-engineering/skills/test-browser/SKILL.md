@@ -26,29 +26,43 @@ Platform-specific hints:
 
 ## Setup
 
+<<<<<<< HEAD
+=======
+Check whether `agent-browser` is installed:
+
+>>>>>>> upstream/main
 ```bash
 command -v agent-browser >/dev/null 2>&1 && echo "Installed" || echo "NOT INSTALLED"
 ```
 
+<<<<<<< HEAD
 Install if needed:
 ```bash
 npm install -g agent-browser
 agent-browser install
 ```
+=======
+If not installed, inform the user: "`agent-browser` is not installed. Run `/ce-setup` to install required dependencies." Then stop — this skill cannot function without agent-browser.
+>>>>>>> upstream/main
 
-See the `agent-browser` skill for detailed usage.
+## Workflow
 
+<<<<<<< HEAD
 ## Workflow
 
 ### 1. Verify Installation
 
+=======
+### 1. Verify Installation
+
+>>>>>>> upstream/main
 Before starting, verify `agent-browser` is available:
 
 ```bash
-command -v agent-browser >/dev/null 2>&1 && echo "Ready" || (echo "Installing..." && npm install -g agent-browser && agent-browser install)
+command -v agent-browser >/dev/null 2>&1 && echo "Ready" || echo "NOT INSTALLED"
 ```
 
-If installation fails, inform the user and stop.
+If not installed, inform the user: "`agent-browser` is not installed. Run `/ce-setup` to install required dependencies." Then stop.
 
 ### 2. Ask Browser Mode
 
@@ -286,6 +300,13 @@ After all tests complete, present a summary:
 
 ## agent-browser CLI Reference
 
+<<<<<<< HEAD
+=======
+Run `agent-browser --help` for all commands.
+
+Key commands:
+
+>>>>>>> upstream/main
 ```bash
 # Navigation
 agent-browser open <url>           # Navigate to URL
