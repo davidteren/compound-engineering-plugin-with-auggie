@@ -60,8 +60,8 @@ async function loadAgents(agentsDirs: string[]): Promise<ClaudeAgent[]> {
   const agents: ClaudeAgent[] = []
   for (const file of files) {
     const raw = await readText(file)
-    const { data, body } = parseFrontmatter(raw)
-    const name = (data.name as string) ?? path.basename(file, ".md")
+    const { data, body } = parseFrontmatter(raw, file)
+    const name = (data.name as string) ?? deriveMarkdownStem(file)
     agents.push({
       name,
       description: data.description as string | undefined,
@@ -80,7 +80,7 @@ async function loadCommands(commandsDirs: string[]): Promise<ClaudeCommand[]> {
   const commands: ClaudeCommand[] = []
   for (const file of files) {
     const raw = await readText(file)
-    const { data, body } = parseFrontmatter(raw)
+    const { data, body } = parseFrontmatter(raw, file)
     const name = (data.name as string) ?? path.basename(file, ".md")
     const allowedTools = parseAllowedTools(data["allowed-tools"])
     const disableModelInvocation = data["disable-model-invocation"] === true ? true : undefined
@@ -104,14 +104,16 @@ async function loadSkills(skillsDirs: string[]): Promise<ClaudeSkill[]> {
   const skills: ClaudeSkill[] = []
   for (const file of skillFiles) {
     const raw = await readText(file)
-    const { data } = parseFrontmatter(raw)
+    const { data } = parseFrontmatter(raw, file)
     const name = (data.name as string) ?? path.basename(path.dirname(file))
     const disableModelInvocation = data["disable-model-invocation"] === true ? true : undefined
+    const ce_platforms = Array.isArray(data.ce_platforms) ? (data.ce_platforms as string[]) : undefined
     skills.push({
       name,
       description: data.description as string | undefined,
       argumentHint: data["argument-hint"] as string | undefined,
       disableModelInvocation,
+      ce_platforms,
       sourceDir: path.dirname(file),
       skillPath: file,
     })
@@ -201,6 +203,10 @@ function toPathList(value?: string | string[]): string[] {
 async function collectMarkdownFiles(dirs: string[]): Promise<string[]> {
   const entries = await collectFiles(dirs)
   return entries.filter((file) => file.endsWith(".md"))
+}
+
+function deriveMarkdownStem(filePath: string): string {
+  return path.basename(filePath, ".md").replace(/\.agent$/, "")
 }
 
 async function collectFiles(dirs: string[]): Promise<string[]> {

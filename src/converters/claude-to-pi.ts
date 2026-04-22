@@ -1,5 +1,5 @@
 import { formatFrontmatter } from "../utils/frontmatter"
-import type { ClaudeAgent, ClaudeCommand, ClaudeMcpServer, ClaudePlugin } from "../types/claude"
+import { type ClaudeAgent, type ClaudeCommand, type ClaudeMcpServer, type ClaudePlugin, filterSkillsByPlatform } from "../types/claude"
 import type {
   PiBundle,
   PiGeneratedSkill,
@@ -17,8 +17,9 @@ export function convertClaudeToPi(
   plugin: ClaudePlugin,
   _options: ClaudeToPiOptions,
 ): PiBundle {
+  const platformSkills = filterSkillsByPlatform(plugin.skills, "pi")
   const promptNames = new Set<string>()
-  const usedSkillNames = new Set<string>(plugin.skills.map((skill) => normalizeName(skill.name)))
+  const usedSkillNames = new Set<string>(platformSkills.map((skill) => normalizeName(skill.name)))
 
   const prompts = plugin.commands
     .filter((command) => !command.disableModelInvocation)
@@ -34,8 +35,9 @@ export function convertClaudeToPi(
   ]
 
   return {
+    pluginName: plugin.manifest.name,
     prompts,
-    skillDirs: plugin.skills.map((skill) => ({
+    skillDirs: platformSkills.map((skill) => ({
       name: skill.name,
       sourceDir: skill.sourceDir,
     })),
@@ -107,8 +109,19 @@ export function transformContentForPi(body: string): string {
 
   // Claude-specific tool references
   result = result.replace(/\bAskUserQuestion\b/g, "ask_user_question")
+<<<<<<< HEAD
   result = result.replace(/\bTodoWrite\b/g, "file-based todos (todos/ + /skill:todo-create)")
   result = result.replace(/\bTodoRead\b/g, "file-based todos (todos/ + /skill:todo-create)")
+=======
+  // Claude Code task-tracking primitives: current Task* API (TaskCreate/TaskUpdate/TaskList/TaskGet/TaskStop/TaskOutput)
+  // plus the deprecated legacy pair (TodoWrite/TodoRead). All map to the platform's task-tracking primitive.
+  result = result.replace(
+    /\bTask(?:Create|Update|List|Get|Stop|Output)\b/g,
+    "the platform's task-tracking primitive",
+  )
+  result = result.replace(/\bTodoWrite\b/g, "the platform's task-tracking primitive")
+  result = result.replace(/\bTodoRead\b/g, "the platform's task-tracking primitive")
+>>>>>>> upstream/main
 
   // /command-name or /workflows:command-name -> /workflows-command-name
   const slashCommandPattern = /(?<![:\w])\/([a-z][a-z0-9_:-]*?)(?=[\s,."')\]}`]|$)/gi
