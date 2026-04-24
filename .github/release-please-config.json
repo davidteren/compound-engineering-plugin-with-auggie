@@ -3,10 +3,39 @@
   "include-component-in-tag": true,
   "release-search-depth": 20,
   "commit-search-depth": 50,
+  "plugins": [
+    {
+      "type": "linked-versions",
+      "groupName": "compound-engineering",
+      "components": ["cli", "compound-engineering"]
+    }
+  ],
   "packages": {
     ".": {
       "release-type": "simple",
       "package-name": "cli",
+      "release-as": "3.0.2",
+      "exclude-paths": [
+        "AGENTS.md",
+        "CLAUDE.md",
+        "README.md",
+        "LICENSE",
+        "SECURITY.md",
+        "PRIVACY.md",
+        "favicon.png",
+        "docs/",
+        "scripts/",
+        ".github/",
+        ".claude/",
+        ".codex/",
+        ".agents/",
+        ".gemini/",
+        ".cursor/",
+        ".windsurf/",
+        ".claude-plugin/",
+        ".cursor-plugin/",
+        "plugins/"
+      ],
       "extra-files": [
         {
           "type": "json",
@@ -18,6 +47,7 @@
     "plugins/compound-engineering": {
       "release-type": "simple",
       "package-name": "compound-engineering",
+      "release-as": "3.0.2",
       "extra-files": [
         {
           "type": "json",
@@ -27,6 +57,11 @@
         {
           "type": "json",
           "path": ".cursor-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".codex-plugin/plugin.json",
           "jsonpath": "$.version"
         }
       ]
@@ -43,6 +78,11 @@
         {
           "type": "json",
           "path": ".cursor-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".codex-plugin/plugin.json",
           "jsonpath": "$.version"
         }
       ]
