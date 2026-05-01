@@ -1,0 +1,129 @@
+package.json
+  e367343b463cb5e1 3-4,32
+docs/plans/2026-03-13-feat-augment-integration-proposal.md
+  e367343b463cb5e1 2-5,8,10,12-14,16,18-20,22-27,29-31,33,35-36,38-43,45,47,49-88,90,93-95,97,100,102,104,106-107,109,111-114,116-118,120-121,123,125-132,134,136-137,139,142,145,147-149,152-153,155,157,159-162,164,166-170,172,174-177,179,181-182,184-190,192,194,196,198-203,205,207,209,212-224,227-228,230-231,234-235,237-239,242,244-249,251,253,255-259,261-264,266-268,270-271,273,275,277-279,281,283,285,287-289,291,293-295,297,299,301-307,310,312-314,316,318-319,321,323,325,327-328,330,332-334,336,338-346,349,351-352,354,356,358-359,361-363,365-366,368,370-376,378-379,381,383-385,387,389-393,395,397-404,406,408,410-413,415,417,419-421,423,425-428,430,432-434,436,438-441,443,445-480,482
+plugins/compound-engineering/CHANGELOG.md
+  e367343b463cb5e1 1232-1237
+src/targets/pi.ts
+  e367343b463cb5e1 1,7,10,16-18,22,28-34,37-56,58-69,74-80,83,87-90,94-104,120-132,135-140,145,149-150,157,161-162,168,172-173,213-493
+src/targets/kiro.ts
+  e367343b463cb5e1 2,5-7,11,14-18,27,33,44,54,75,106-109,118,129,137-153
+src/utils/codex-content.ts
+  e367343b463cb5e1 4,31,36-43,45,53-59,83-84,92-104
+plugins/compound-engineering/agents/ce-kieran-typescript-reviewer.agent.md
+  e367343b463cb5e1 13,15-21
+src/utils/files.ts
+  e367343b463cb5e1 79-124,156-157,159-163,169,179,181-184
+plugins/compound-engineering/agents/ce-learnings-researcher.agent.md
+  e367343b463cb5e1 10-19
+tests/gemini-writer.test.ts
+  e367343b463cb5e1 7-8,20-28,31-51,76,80,82-83,86,107,121,128,132-134,160-161,170,249-362
+plugins/compound-engineering/skills/ce-report-bug/SKILL.md
+  e367343b463cb5e1 12-15
+wip/sync_task.md
+  e367343b463cb5e1 1,3-21
+plugins/compound-engineering/skills/ce-compound-refresh/SKILL.md
+  e367343b463cb5e1 10-13
+src/utils/codex-agents.ts
+  e367343b463cb5e1 22-24
+src/converters/claude-to-opencode.ts
+  e367343b463cb5e1 2-9,24-41,101,106,116-121,149,288-318,382,396,410,426-427
+tests/review-skill-contract.test.ts
+  e367343b463cb5e1 4,10,12,17-19,29-71,73,75,78-106,108,110-115,117-156,158-165,173,176-179,187,212-227,229-619,623,631-645,650-746,748-749
+plugins/compound-engineering/agents/ce-schema-drift-detector.agent.md
+  e367343b463cb5e1 12,14,17,19
+plugins/compound-engineering/agents/ce-spec-flow-analyzer.agent.md
+  e367343b463cb5e1 14-16
+plugins/compound-engineering/README.md
+  e367343b463cb5e1 183,185
+plugins/compound-engineering/agents/ce-dhh-rails-reviewer.agent.md
+  e367343b463cb5e1 13,15-21
+tests/gemini-converter.test.ts
+  e367343b463cb5e1 45,52-54,57,68-70,96-97,107-108,133,236,250,266,271,285,326,335-337,348-349,357,359,362,364
+.gitignore
+  e367343b463cb5e1 8-12
+src/converters/claude-to-copilot.ts
+  e367343b463cb5e1 2-3,25-27,44,53,125-133,138
+README.md
+  e367343b463cb5e1 389-394
+.claude/skills/sync-upstream/scripts/verify-auggie-integrity.sh
+  e367343b463cb5e1 48-61,80-81,87,91-94,112-114,116
+.idea/vcs.xml
+  e367343b463cb5e1 1-6
+.github/.release-please-manifest.json
+  e367343b463cb5e1 2-4
+src/converters/claude-to-pi.ts
+  e367343b463cb5e1 2,5,19,21-25,31,34,36,40-42,47-71,79,87,131-138
+plugins/compound-engineering/agents/ce-best-practices-researcher.agent.md
+  e367343b463cb5e1 12-21
+.idea/compound-engineering-plugin-with-auggie.iml
+  e367343b463cb5e1 1-15
+.idea/.gitignore
+  e367343b463cb5e1 1-10
+plugins/compound-engineering/agents/ce-repo-research-analyst.agent.md
+  e367343b463cb5e1 41,43-44,47,51-52
+plugins/compound-engineering/skills/ce-ideate/SKILL.md
+  e367343b463cb5e1 38-41
+.idea/AugmentWebviewStateStore.xml
+  e367343b463cb5e1 1-10
+plugins/compound-engineering/agents/ce-kieran-rails-reviewer.agent.md
+  e367343b463cb5e1 13,15-21
+plugins/compound-engineering/skills/ce-code-review/SKILL.md
+  e367343b463cb5e1 187-190
+tests/pi-converter.test.ts
+  e367343b463cb5e1 11,31-33,35-74,76-80,82,85,99,121-124,126-127,130,137-138,140-142,144,159-162,165,172-179,194-195,199,206-209,224-226,228
+plugins/compound-engineering/agents/ce-kieran-python-reviewer.agent.md
+  e367343b463cb5e1 13,15-21
+plugins/compound-engineering/agents/ce-pr-comment-resolver.agent.md
+  e367343b463cb5e1 12,14,17
+tests/droid-converter.test.ts
+  e367343b463cb5e1 92-115,241,260
+src/targets/gemini.ts
+  e367343b463cb5e1 2,5-16,19-31,33-35,39-42,48-58,64,91-104,107-112,117,119,125,127,131-144
+.claude-plugin/marketplace.json
+  e367343b463cb5e1 8-9
+src/targets/codex.ts
+  e367343b463cb5e1 1,3,7-24,30-39,42,44,46-47,50-65,68-69,72,82-107,111-130,135,143-471,475,478-479,507-571,578-603
+plugins/compound-engineering/skills/ce-plan/SKILL.md
+  e367343b463cb5e1 192
+src/converters/claude-to-gemini.ts
+  e367343b463cb5e1 2-3,16-17,22-23,33,36,39,42,78,80,89,92-93,102,104
+tests/kiro-writer.test.ts
+  e367343b463cb5e1 6,18-26,36-94,178,192,198
+plugins/compound-engineering/.cursor-plugin/plugin.json
+  e367343b463cb5e1 4,26-27
+.idea/modules.xml
+  e367343b463cb5e1 1-8
+tests/codex-converter.test.ts
+  e367343b463cb5e1 2-4,49,54-101,115-116,125-157,160,168,188,191-192,194-195,206,226,230,238,245,263-282,290,297-299,306,315-316,320,324-343,351,358-360,366-405,417-424,432,438,452,468,476,485-525,533,535,542,549,569,576-578,607,643,654,673,676-678,681,701,704
+AGENTS.md
+  e367343b463cb5e1 200-208
+plugins/compound-engineering/agents/ce-agent-native-reviewer.agent.md
+  e367343b463cb5e1 15,17,20,22
+.claude/skills/sync-upstream/references/auggie-mcp-files.md
+  e367343b463cb5e1 5,9-19,21,23-24,26,28,30,32-39,43-45,58-60,65,76-77
+plugins/compound-engineering/.claude-plugin/plugin.json
+  e367343b463cb5e1 3,23-24
+.idea/workspace.xml
+  e367343b463cb5e1 1-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "fa8679451d7a6aa8012e4df24b01ccb69a21c9e8",
+  "prompts": {
+    "e367343b463cb5e1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "885ac5f0-f8d2-47c4-9ae2-0b252d5e41fc",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "davidteren",
+      "messages": [],
+      "total_additions": 14785,
+      "total_deletions": 12237,
+      "accepted_lines": 10069,
+      "overriden_lines": 0
+    }
+  }
+}
